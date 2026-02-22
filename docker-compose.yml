@@ -1,0 +1,12 @@
+services:
+  sac-companion:
+    build: ./companion
+    image: beveradb/sac-demo-companion:latest
+    ports:
+      - "7227:7227"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "4"
+    restart: unless-stopped
