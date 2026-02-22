@@ -1,0 +1,81 @@
+/*
+ * Array Operations Demo - SAC
+ * Demonstrates transpose, reverse, rotate, take, drop on matrices.
+ */
+use Array: all;
+use StdIO: all;
+
+void printMatrix(int[.,.] m)
+{
+  shp = shape(m);
+  for (i = 0; i < shp[0]; i++) {
+    for (j = 0; j < shp[1]; j++) {
+      printf("%4d", m[i,j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+void printVector(int[.] v)
+{
+  for (i = 0; i < shape(v)[0]; i++) {
+    printf("%4d", v[i]);
+  }
+  printf("\n\n");
+}
+
+int main()
+{
+  /* Create a 4x4 matrix */
+  matrix = reshape([4,4], iota(16) + 1);
+
+  printf("=== SAC Array Operations Demo ===\n\n");
+
+  printf("Original 4x4 matrix:\n");
+  printMatrix(matrix);
+
+  /* Transpose */
+  t = transpose(matrix);
+  printf("transpose(matrix):\n");
+  printMatrix(t);
+
+  /* Reverse */
+  r = reverse(matrix);
+  printf("reverse(matrix):\n");
+  printMatrix(r);
+
+  /* Rotate */
+  rot = rotate([1], matrix);
+  printf("rotate([1], matrix):\n");
+  printMatrix(rot);
+
+  /* Take */
+  tk = take([3,3], matrix);
+  printf("take([3,3], matrix):\n");
+  printMatrix(tk);
+
+  /* Drop */
+  dr = drop([1,1], matrix);
+  printf("drop([1,1], matrix):\n");
+  printMatrix(dr);
+
+  /* 1D operations */
+  vec = iota(8) + 1;
+  printf("1D vector: ");
+  printVector(vec);
+
+  printf("reverse(vec): ");
+  printVector(reverse(vec));
+
+  printf("rotate([2], vec): ");
+  printVector(rotate([2], vec));
+
+  printf("take([5], vec): ");
+  printVector(take([5], vec));
+
+  printf("drop([3], vec): ");
+  printVector(drop([3], vec));
+
+  return 0;
+}

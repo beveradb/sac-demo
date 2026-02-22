@@ -1,0 +1,97 @@
+/*
+ * N-Body Gravity Simulation Demo - SAC
+ * All-pairs gravitational acceleration computation.
+ */
+use Array: all;
+use StdIO: all;
+use Math: all;
+
+int main()
+{
+  printf("=== SAC N-Body Simulation Demo ===\n\n");
+
+  N = 8;
+  G = 1.0;
+  DT = 0.01;
+  SOFTENING = 0.1;
+  STEPS = 10;
+
+  /* Initialize positions in a circle */
+  pos = with {
+    ([0,0] <= [i,j] < [N, 2]):
+      (j == 0
+        ? cos(tod(i) * 2.0 * 3.14159265 / tod(N)) * 10.0
+        : sin(tod(i) * 2.0 * 3.14159265 / tod(N)) * 10.0);
+  } : genarray([N, 2], 0.0);
+
+  /* Initial velocities: tangential */
+  vel = with {
+    ([0,0] <= [i,j] < [N, 2]):
+      (j == 0
+        ? -sin(tod(i) * 2.0 * 3.14159265 / tod(N)) * 0.5
+        :  cos(tod(i) * 2.0 * 3.14159265 / tod(N)) * 0.5);
+  } : genarray([N, 2], 0.0);
+
+  /* Masses */
+  mass = with {
+    ([0] <= [i] < [N]): 1.0 + tod(i) * 0.5;
+  } : genarray([N], 1.0);
+
+  printf("Initial positions:\n");
+  for (i = 0; i < N; i++) {
+    printf("  Particle %d: (%7.3f, %7.3f) mass=%.1f\n",
+           i, pos[i,0], pos[i,1], mass[i]);
+  }
+  printf("\n");
+
+  /* Run simulation */
+  for (step = 0; step < STEPS; step++) {
+    /* Compute accelerations (all-pairs) */
+    acc = with {
+      ([0,0] <= [i,k] < [N, 2]):
+        {
+          a = 0.0;
+          for (j = 0; j < N; j++) {
+            if (j != i) {
+              dx = pos[j,0] - pos[i,0];
+              dy = pos[j,1] - pos[i,1];
+              distSq = dx*dx + dy*dy + SOFTENING;
+              dist = sqrt(distSq);
+              force = G * mass[j] / (distSq * dist);
+              if (k == 0) {
+                a = a + dx * force;
+              } else {
+                a = a + dy * force;
+              }
+            }
+          }
+        } : a;
+    } : genarray([N, 2], 0.0);
+
+    /* Update velocities and positions */
+    vel = with {
+      ([0,0] <= [i,j] < [N, 2]):
+        vel[i,j] + acc[i,j] * DT;
+    } : genarray([N, 2], 0.0);
+
+    pos = with {
+      ([0,0] <= [i,j] < [N, 2]):
+        pos[i,j] + vel[i,j] * DT;
+    } : genarray([N, 2], 0.0);
+  }
+
+  printf("After %d steps:\n", STEPS);
+  for (i = 0; i < N; i++) {
+    printf("  Particle %d: (%7.3f, %7.3f) vel=(%7.3f, %7.3f)\n",
+           i, pos[i,0], pos[i,1], vel[i,0], vel[i,1]);
+  }
+
+  /* Compute total kinetic energy */
+  ke = 0.0;
+  for (i = 0; i < N; i++) {
+    ke = ke + 0.5 * mass[i] * (vel[i,0]*vel[i,0] + vel[i,1]*vel[i,1]);
+  }
+  printf("\nTotal kinetic energy: %.6f\n", ke);
+
+  return 0;
+}

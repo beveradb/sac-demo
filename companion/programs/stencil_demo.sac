@@ -1,0 +1,80 @@
+/*
+ * Stencil Convolution Demo - SAC
+ * Applies a 3x3 convolution kernel to a small matrix.
+ */
+use Array: all;
+use StdIO: all;
+use Math: all;
+
+void printMatrixD(double[.,.] m)
+{
+  shp = shape(m);
+  for (i = 0; i < shp[0]; i++) {
+    for (j = 0; j < shp[1]; j++) {
+      printf("%7.1f", m[i,j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+int main()
+{
+  printf("=== SAC Stencil Convolution Demo ===\n\n");
+
+  N = 8;
+
+  /* Create sample image: gradient with some features */
+  image = with {
+    ([0,0] <= [i,j] < [N,N]):
+      tod(i * N + j);
+  } : genarray([N,N], 0.0);
+
+  printf("Input %dx%d image:\n", N, N);
+  printMatrixD(image);
+
+  /* Gaussian blur kernel */
+  kernel = reshape([3,3],
+    [1.0, 2.0, 1.0,
+     2.0, 4.0, 2.0,
+     1.0, 2.0, 1.0]) / 16.0;
+
+  /* Apply convolution on interior pixels */
+  blurred = with {
+    ([1,1] <= [i,j] < [N-1, N-1]):
+      {
+        s = 0.0;
+        for (di = 0; di < 3; di++) {
+          for (dj = 0; dj < 3; dj++) {
+            s = s + image[i+di-1, j+dj-1] * kernel[di,dj];
+          }
+        }
+      } : s;
+  } : genarray([N,N], 0.0);
+
+  printf("After Gaussian blur (3x3):\n");
+  printMatrixD(blurred);
+
+  /* Edge detection kernel */
+  edge_kernel = reshape([3,3],
+    [-1.0, -1.0, -1.0,
+     -1.0,  8.0, -1.0,
+     -1.0, -1.0, -1.0]);
+
+  edges = with {
+    ([1,1] <= [i,j] < [N-1, N-1]):
+      {
+        s = 0.0;
+        for (di = 0; di < 3; di++) {
+          for (dj = 0; dj < 3; dj++) {
+            s = s + image[i+di-1, j+dj-1] * edge_kernel[di,dj];
+          }
+        }
+      } : fabs(s);
+  } : genarray([N,N], 0.0);
+
+  printf("After edge detection (Laplacian):\n");
+  printMatrixD(edges);
+
+  return 0;
+}

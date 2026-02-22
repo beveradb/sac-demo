@@ -1,0 +1,77 @@
+/*
+ * Tensor Comprehensions Demo - SAC
+ * Demonstrates with-loop comprehensions for various array transformations.
+ */
+use Array: all;
+use StdIO: all;
+
+void printMatrix(int[.,.] m)
+{
+  shp = shape(m);
+  for (i = 0; i < shp[0]; i++) {
+    for (j = 0; j < shp[1]; j++) {
+      printf("%4d", m[i,j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+void printVector(int[.] v)
+{
+  for (i = 0; i < shape(v)[0]; i++) {
+    printf("%4d", v[i]);
+  }
+  printf("\n\n");
+}
+
+int main()
+{
+  printf("=== SAC Tensor Comprehensions Demo ===\n\n");
+
+  A = reshape([4,4], iota(16) + 1);
+  printf("Input matrix A:\n");
+  printMatrix(A);
+
+  /* Transpose via comprehension */
+  t = with {
+    ([0,0] <= [i,j] < [4,4]): A[j,i];
+  } : genarray([4,4], 0);
+  printf("Transpose { [i,j] -> A[j,i] }:\n");
+  printMatrix(t);
+
+  /* Diagonal extraction */
+  diag = with {
+    ([0] <= [i] < [4]): A[i,i];
+  } : genarray([4], 0);
+  printf("Diagonal { [i] -> A[i,i] }:\n");
+  printVector(diag);
+
+  /* Scale by 2 */
+  scaled = with {
+    ([0,0] <= [i,j] < [4,4]): 2 * A[i,j];
+  } : genarray([4,4], 0);
+  printf("Scale { [i,j] -> 2 * A[i,j] }:\n");
+  printMatrix(scaled);
+
+  /* Upper triangular */
+  upper = with {
+    ([0,0] <= [i,j] < [4,4]): (j >= i ? A[i,j] : 0);
+  } : genarray([4,4], 0);
+  printf("Upper triangle { [i,j] -> j>=i ? A[i,j] : 0 }:\n");
+  printMatrix(upper);
+
+  /* Row sums */
+  rowsums = with {
+    ([0] <= [i] < [4]): {
+      s = 0;
+      for (j = 0; j < 4; j++) {
+        s = s + A[i,j];
+      }
+    } : s;
+  } : genarray([4], 0);
+  printf("Row sums { [i] -> sum(A[i]) }:\n");
+  printVector(rowsums);
+
+  return 0;
+}

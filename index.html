@@ -689,6 +689,201 @@ footer a {
   max-width: 1200px;
   margin: 0 auto;
 }
+
+/* ========== SAC Companion Styles ========== */
+
+/* Status indicator pill */
+.sac-companion-indicator {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  backdrop-filter: blur(12px);
+  transition: all 0.4s ease;
+  cursor: default;
+  user-select: none;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.sac-companion-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sac-companion-indicator.connected {
+  background: rgba(0, 184, 148, 0.15);
+  border: 1px solid rgba(0, 184, 148, 0.4);
+  color: var(--success);
+}
+
+.sac-companion-indicator.disconnected {
+  background: rgba(255, 118, 117, 0.1);
+  border: 1px solid rgba(255, 118, 117, 0.3);
+  color: #ff7675;
+}
+
+.sac-companion-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: sac-pulse 2s ease-in-out infinite;
+}
+
+.connected .sac-companion-dot {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(0, 184, 148, 0.6);
+}
+
+.disconnected .sac-companion-dot {
+  background: #ff7675;
+  box-shadow: none;
+  animation: none;
+}
+
+@keyframes sac-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* "Run in SAC" button */
+.sac-run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+  padding: 0.45rem 1rem;
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(0, 206, 201, 0.2));
+  border: 1px solid rgba(108, 92, 231, 0.4);
+  border-radius: 8px;
+  color: var(--accent2);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sac-run-btn:hover {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.35), rgba(0, 206, 201, 0.35));
+  border-color: var(--accent2);
+  box-shadow: 0 0 15px rgba(0, 206, 201, 0.2);
+}
+
+.sac-run-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sac-run-btn .sac-run-icon {
+  font-size: 0.9rem;
+}
+
+/* Editable code block highlight */
+.code-block[contenteditable="true"] {
+  outline: none;
+  border-color: rgba(108, 92, 231, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(108, 92, 231, 0.15);
+}
+
+.code-block[contenteditable="true"]:focus {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(108, 92, 231, 0.3), 0 0 20px rgba(108, 92, 231, 0.1);
+}
+
+.code-block .editable-hint {
+  position: absolute;
+  top: 0.5rem;
+  right: 3.5rem;
+  font-size: 0.6rem;
+  color: var(--accent);
+  opacity: 0.6;
+  font-family: sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+/* SAC output panel */
+.sac-output {
+  margin-top: 0.6rem;
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+.sac-output.success {
+  background: rgba(0, 184, 148, 0.08);
+  border: 1px solid rgba(0, 184, 148, 0.25);
+  color: var(--success);
+}
+
+.sac-output.error {
+  background: rgba(255, 118, 117, 0.08);
+  border: 1px solid rgba(255, 118, 117, 0.25);
+  color: #ff7675;
+}
+
+.sac-output.loading {
+  background: rgba(108, 92, 231, 0.08);
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  color: var(--accent);
+}
+
+.sac-output .output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.sac-output .output-timing {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+/* Real SAC benchmark button */
+.sac-bench-btn {
+  background: linear-gradient(135deg, rgba(0, 184, 148, 0.2), rgba(0, 206, 201, 0.3));
+  border: 1px solid rgba(0, 184, 148, 0.4);
+  color: var(--success);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+}
+
+.sac-bench-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 184, 148, 0.35), rgba(0, 206, 201, 0.45));
+  box-shadow: 0 0 15px rgba(0, 184, 148, 0.2);
+}
+
+.sac-bench-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 </style>
 </head>
 <body>
@@ -1906,6 +2101,363 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
   initParticles();
   render();
+})();
+
+// ============================================================
+// SAC COMPANION - Real sac2c integration
+// ============================================================
+(function() {
+  const COMPANION_URL = 'http://localhost:7227';
+  const HEALTH_INTERVAL = 10000;   // 10s heartbeat
+  const HEALTH_TIMEOUT = 1500;     // 1.5s timeout
+  const MAX_FAILURES = 3;
+
+  let connected = false;
+  let failCount = 0;
+  let heartbeatTimer = null;
+  let indicatorEl = null;
+  let sacVersion = '';
+  let addedButtons = [];
+  let benchBtn = null;
+
+  // ---- Indicator ----
+
+  function createIndicator() {
+    indicatorEl = document.createElement('div');
+    indicatorEl.className = 'sac-companion-indicator';
+    indicatorEl.innerHTML = '<span class="sac-companion-dot"></span><span class="sac-companion-text"></span>';
+    document.body.appendChild(indicatorEl);
+  }
+
+  function updateIndicator(isConnected, text) {
+    if (!indicatorEl) return;
+    indicatorEl.classList.remove('connected', 'disconnected');
+    indicatorEl.classList.add(isConnected ? 'connected' : 'disconnected');
+    indicatorEl.classList.add('visible');
+    indicatorEl.querySelector('.sac-companion-text').textContent = text;
+  }
+
+  function hideIndicator() {
+    if (indicatorEl) {
+      indicatorEl.classList.remove('visible');
+    }
+  }
+
+  // ---- Health check ----
+
+  async function checkHealth() {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), HEALTH_TIMEOUT);
+      const resp = await fetch(COMPANION_URL + '/health', { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!resp.ok) throw new Error('not ok');
+      const data = await resp.json();
+      sacVersion = data.sac2c_version || 'sac2c';
+      failCount = 0;
+      if (!connected) {
+        connected = true;
+        onConnect();
+      }
+    } catch (e) {
+      failCount++;
+      if (connected && failCount >= MAX_FAILURES) {
+        connected = false;
+        onDisconnect();
+      }
+    }
+  }
+
+  function startHeartbeat() {
+    checkHealth();
+    heartbeatTimer = setInterval(checkHealth, HEALTH_INTERVAL);
+  }
+
+  // ---- Connect / Disconnect ----
+
+  function onConnect() {
+    updateIndicator(true, 'SAC Runtime Connected');
+    addRunButtons();
+    addBenchmarkButton();
+  }
+
+  function onDisconnect() {
+    updateIndicator(false, 'SAC Runtime Disconnected');
+    removeRunButtons();
+    removeBenchmarkButton();
+  }
+
+  // ---- "Run in SAC" buttons ----
+
+  // Map section code blocks to their demo program names
+  const codeBlockMap = [
+    { selector: '#array-code',   name: 'array_ops_demo' },
+    { selector: '#tensor-code',  name: 'tensor_demo' },
+    { selector: '#stencil-code', name: 'stencil_demo' },
+  ];
+
+  function addRunButtons() {
+    // Add to mapped code blocks
+    codeBlockMap.forEach(({ selector, name }) => {
+      const codeEl = document.querySelector(selector);
+      if (!codeEl || codeEl.querySelector('.sac-run-btn')) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'sac-run-btn';
+      btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run in SAC';
+      btn.dataset.sacDemo = name;
+      btn.addEventListener('click', () => handleRun(btn, codeEl, name));
+      codeEl.parentNode.insertBefore(btn, codeEl.nextSibling);
+      addedButtons.push(btn);
+    });
+
+    // Add to other .code-block elements that have SAC code
+    document.querySelectorAll('.code-block').forEach(codeEl => {
+      if (codeEl.querySelector('.sac-run-btn')) return;
+      if (codeEl.parentNode.querySelector('.sac-run-btn')) return;
+      // Only add if the code block has a SAC label and contains function-like code
+      const label = codeEl.querySelector('.label');
+      if (!label || label.textContent.trim() !== 'SAC') return;
+      // Skip syntax/result-only blocks
+      const text = codeEl.textContent;
+      if (text.includes('sac2c -t') || text.includes('Click "Run') || text.includes('General form')) return;
+      if (text.includes('accelerations(')) {
+        // N-body code block
+        const btn = document.createElement('button');
+        btn.className = 'sac-run-btn';
+        btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run in SAC';
+        btn.dataset.sacDemo = 'nbody_demo';
+        btn.addEventListener('click', () => handleRun(btn, codeEl, 'nbody_demo'));
+        codeEl.parentNode.insertBefore(btn, codeEl.nextSibling);
+        addedButtons.push(btn);
+      }
+    });
+  }
+
+  function removeRunButtons() {
+    addedButtons.forEach(btn => btn.remove());
+    addedButtons = [];
+    // Remove output panels
+    document.querySelectorAll('.sac-output').forEach(el => el.remove());
+    // Remove editable hints
+    document.querySelectorAll('.editable-hint').forEach(el => el.remove());
+    // Remove contenteditable
+    document.querySelectorAll('.code-block[contenteditable]').forEach(el => {
+      el.removeAttribute('contenteditable');
+    });
+  }
+
+  // ---- Run handler ----
+
+  async function handleRun(btn, codeEl, demoName) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const origHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="sac-run-icon">&#8987;</span> Compiling...';
+
+    // Remove previous output
+    const prevOutput = btn.parentNode.querySelector('.sac-output');
+    if (prevOutput) prevOutput.remove();
+
+    // Show loading output
+    const outputEl = document.createElement('div');
+    outputEl.className = 'sac-output loading';
+    outputEl.innerHTML = '<div class="output-header">sac2c output</div>Compiling and running...';
+    btn.parentNode.insertBefore(outputEl, btn.nextSibling);
+
+    try {
+      // Always use the pre-compiled demo, since code blocks show SAC fragments, not full programs
+      const resp = await fetch(COMPANION_URL + '/compile-run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: getFullProgram(demoName),
+          target: 'seq',
+          threads: 1,
+        }),
+      });
+      const data = await resp.json();
+
+      outputEl.classList.remove('loading');
+      if (data.success) {
+        outputEl.classList.add('success');
+        const timing = [];
+        if (data.compile_time_ms > 0) timing.push(`compile: ${Math.round(data.compile_time_ms)}ms`);
+        if (data.run_time_ms > 0) timing.push(`run: ${Math.round(data.run_time_ms)}ms`);
+        outputEl.innerHTML =
+          `<div class="output-header"><span>sac2c output</span><span class="output-timing">${timing.join(' | ')}</span></div>` +
+          escapeHtml(data.stdout || '(no output)') +
+          (data.stderr ? '\n' + escapeHtml(data.stderr) : '');
+      } else {
+        outputEl.classList.add('error');
+        outputEl.innerHTML =
+          `<div class="output-header">sac2c error</div>` +
+          escapeHtml(data.error || 'Unknown error') +
+          (data.stderr ? '\n\n' + escapeHtml(data.stderr) : '');
+      }
+    } catch (e) {
+      outputEl.classList.remove('loading');
+      outputEl.classList.add('error');
+      outputEl.innerHTML = `<div class="output-header">connection error</div>Could not reach SAC companion server.\n${escapeHtml(e.message)}`;
+    }
+
+    btn.innerHTML = origHTML;
+    btn.disabled = false;
+  }
+
+  function getFullProgram(name) {
+    // Send a sentinel that tells the server to use the pre-written program file
+    // The server reads from /app/programs/<name>.sac
+    // We send the program source so it can also accept user-edited code in the future
+    const programs = {
+      mandelbrot_demo: 'USE_PRECOMPILED:mandelbrot_demo',
+      array_ops_demo: 'USE_PRECOMPILED:array_ops_demo',
+      tensor_demo: 'USE_PRECOMPILED:tensor_demo',
+      stencil_demo: 'USE_PRECOMPILED:stencil_demo',
+      nbody_demo: 'USE_PRECOMPILED:nbody_demo',
+      parallel_bench: 'USE_PRECOMPILED:parallel_bench',
+    };
+    return programs[name] || '';
+  }
+
+  // ---- Benchmark ----
+
+  function addBenchmarkButton() {
+    const controlsEl = document.querySelector('.parallel-controls');
+    if (!controlsEl || controlsEl.querySelector('.sac-bench-btn')) return;
+
+    benchBtn = document.createElement('button');
+    benchBtn.className = 'sac-bench-btn';
+    benchBtn.textContent = 'Run Real SAC Benchmark';
+    benchBtn.addEventListener('click', handleBenchmark);
+    controlsEl.appendChild(benchBtn);
+  }
+
+  function removeBenchmarkButton() {
+    if (benchBtn) {
+      benchBtn.remove();
+      benchBtn = null;
+    }
+  }
+
+  async function handleBenchmark() {
+    if (!benchBtn || benchBtn.disabled) return;
+    benchBtn.disabled = true;
+    benchBtn.textContent = 'Running SAC benchmark...';
+
+    const resultEl = document.getElementById('speedup-result');
+    if (resultEl) resultEl.innerHTML = 'Running real SAC benchmark (compiling + executing)...';
+
+    try {
+      const resp = await fetch(COMPANION_URL + '/benchmark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await resp.json();
+
+      if (data.success && data.results && data.results.length > 0) {
+        // Draw real SAC results on the speedup chart
+        drawRealBenchmark(data.results);
+        const last = data.results[data.results.length - 1];
+        const first = data.results[0];
+        if (resultEl) {
+          resultEl.innerHTML =
+            `<strong style="color:var(--success)">Real SAC:</strong> ` +
+            `${last.threads}-thread speedup: <strong>${last.speedup.toFixed(2)}x</strong> ` +
+            `(${first.time_ms.toFixed(0)}ms &rarr; ${last.time_ms.toFixed(0)}ms)`;
+        }
+      } else {
+        if (resultEl) resultEl.innerHTML = `<span style="color:#ff7675">Benchmark failed: ${escapeHtml(data.error || 'unknown error')}</span>`;
+      }
+    } catch (e) {
+      if (resultEl) resultEl.innerHTML = `<span style="color:#ff7675">Could not reach SAC companion: ${escapeHtml(e.message)}</span>`;
+    }
+
+    benchBtn.textContent = 'Run Real SAC Benchmark';
+    benchBtn.disabled = false;
+  }
+
+  function drawRealBenchmark(results) {
+    const speedupCanvas = document.getElementById('speedup-canvas');
+    if (!speedupCanvas) return;
+    const ctx = speedupCanvas.getContext('2d');
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = speedupCanvas.clientWidth;
+    const h = 220;
+    // Don't resize - let the existing chart code handle sizing
+    // Just overlay the real SAC line
+
+    const pad = { l: 50, r: 20, t: 20, b: 40 };
+    const cw = w - pad.l - pad.r;
+    const ch = h - pad.t - pad.b;
+
+    const threadCounts = results.map(r => r.threads);
+    const threadIndices = [1, 2, 4, 8];
+
+    // Draw real SAC line in green
+    ctx.save();
+    ctx.scale(1/dpr, 1/dpr);
+    ctx.scale(dpr, dpr);
+
+    ctx.strokeStyle = '#00b894';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+
+    results.forEach((r, idx) => {
+      const tIdx = threadIndices.indexOf(r.threads);
+      if (tIdx === -1) return;
+      const x = pad.l + (tIdx / (threadIndices.length - 1)) * cw;
+      const speedup = r.speedup;
+      const y = pad.t + ch - (speedup / 8) * ch;
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Draw dots
+    results.forEach((r, idx) => {
+      const tIdx = threadIndices.indexOf(r.threads);
+      if (tIdx === -1) return;
+      const x = pad.l + (tIdx / (threadIndices.length - 1)) * cw;
+      const y = pad.t + ch - (r.speedup / 8) * ch;
+
+      ctx.fillStyle = '#00b894';
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#00b894';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(r.speedup.toFixed(1) + 'x', x, y - 14);
+    });
+
+    // Label
+    ctx.fillStyle = '#00b894';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Real (SAC)', pad.l + 5, pad.t + 12);
+
+    ctx.fillStyle = '#6c5ce7';
+    ctx.fillText('Simulated (JS)', pad.l + 85, pad.t + 12);
+
+    ctx.restore();
+  }
+
+  // ---- Helpers ----
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ---- Init ----
+
+  createIndicator();
+  startHeartbeat();
 })();
 </script>
 </body>
