@@ -1,5 +1,5 @@
 /*
- * Stencil Convolution Demo - SAC
+ * Stencil Convolution Demo - SaC
  * Applies a 3x3 convolution kernel to a small matrix.
  */
 use Array: all;
@@ -20,7 +20,7 @@ void printMatrixD(double[.,.] m)
 
 int main()
 {
-  printf("=== SAC Stencil Convolution Demo ===\n\n");
+  printf("=== SaC Stencil Convolution Demo ===\n\n");
 
   N = 8;
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== SAC Demo Companion Server ==="
+echo "=== SaC Demo Companion Server ==="
 echo "sac2c version: $(sac2c -V 2>&1 | head -1)"
 echo "Listening on port 7227..."
 

@@ -1,4 +1,4 @@
-"""SAC Demo Companion Server - connects the browser demo to a real sac2c compiler."""
+"""SaC Demo Companion Server - connects the browser demo to a real sac2c compiler."""
 
 import asyncio
 import json
@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-app = FastAPI(title="SAC Demo Companion")
+app = FastAPI(title="SaC Demo Companion")
 
 app.add_middleware(
     CORSMiddleware,
@@ -91,7 +91,7 @@ class ComputeResponse(BaseModel):
 async def compile_and_run(
     code: str, target: str = "seq", threads: int = 4
 ) -> CompileRunResponse:
-    """Compile SAC code and run the resulting binary."""
+    """Compile SaC code and run the resulting binary."""
     with tempfile.TemporaryDirectory(prefix="sac_") as tmpdir:
         src_path = os.path.join(tmpdir, "program.sac")
         bin_path = os.path.join(tmpdir, "program")
@@ -216,10 +216,10 @@ async def run_precompiled(name: str, target: str, threads: int) -> CompileRunRes
     return CompileRunResponse(success=False, error=f"Program '{name}' not found")
 
 
-# ---------- SAC Source Generators for /compute ----------
+# ---------- SaC Source Generators for /compute ----------
 
 def generate_array_op_sac(op: str, shape: list[int], data: list[int]) -> str:
-    """Generate SAC code that reshapes data, applies an operation, and outputs JSON."""
+    """Generate SaC code that reshapes data, applies an operation, and outputs JSON."""
     ndim = len(shape)
     shape_str = ",".join(str(s) for s in shape)
     data_str = ",".join(str(d) for d in data)
@@ -286,7 +286,7 @@ int main()
 
 
 def generate_tensor_sac(preset: str, matrix: list[list[int]]) -> str:
-    """Generate SAC code that applies a tensor comprehension and outputs JSON 2D array."""
+    """Generate SaC code that applies a tensor comprehension and outputs JSON 2D array."""
     rows = len(matrix)
     cols = len(matrix[0]) if matrix else 0
     flat = [v for row in matrix for v in row]
@@ -375,7 +375,7 @@ int main()
 
 
 def generate_stencil_sac(kernel_name: str, width: int, height: int) -> str:
-    """Generate SAC code that creates a procedural image, applies a kernel, outputs RGB JSON."""
+    """Generate SaC code that creates a procedural image, applies a kernel, outputs RGB JSON."""
     kernels = {
         "blur":    ([1.0, 2.0, 1.0, 2.0, 4.0, 2.0, 1.0, 2.0, 1.0], 16.0),
         "sharpen": ([0.0, -1.0, 0.0, -1.0, 5.0, -1.0, 0.0, -1.0, 0.0], 1.0),
@@ -521,7 +521,7 @@ def generate_nbody_sac(
     positions: list[list[float]], velocities: list[list[float]],
     masses: list[float], dt: float, g: float, softening: float,
 ) -> str:
-    """Generate SAC code for N-body simulation that outputs JSON frames."""
+    """Generate SaC code for N-body simulation that outputs JSON frames."""
     n = n_particles
 
     # Build position array literal

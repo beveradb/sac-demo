@@ -1,5 +1,5 @@
 /*
- * Array Operations Demo - SAC
+ * Array Operations Demo - SaC
  * Demonstrates transpose, reverse, rotate, take, drop on matrices.
  */
 use Array: all;
@@ -30,7 +30,7 @@ int main()
   /* Create a 4x4 matrix */
   matrix = reshape([4,4], iota(16) + 1);
 
-  printf("=== SAC Array Operations Demo ===\n\n");
+  printf("=== SaC Array Operations Demo ===\n\n");
 
   printf("Original 4x4 matrix:\n");
   printMatrix(matrix);

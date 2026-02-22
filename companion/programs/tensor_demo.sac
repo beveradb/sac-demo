@@ -1,5 +1,5 @@
 /*
- * Tensor Comprehensions Demo - SAC
+ * Tensor Comprehensions Demo - SaC
  * Demonstrates with-loop comprehensions for various array transformations.
  */
 use Array: all;
@@ -27,7 +27,7 @@ void printVector(int[.] v)
 
 int main()
 {
-  printf("=== SAC Tensor Comprehensions Demo ===\n\n");
+  printf("=== SaC Tensor Comprehensions Demo ===\n\n");
 
   A = reshape([4,4], iota(16) + 1);
   printf("Input matrix A:\n");

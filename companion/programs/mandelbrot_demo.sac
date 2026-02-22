@@ -1,5 +1,5 @@
 /*
- * Mandelbrot Demo - SAC
+ * Mandelbrot Demo - SaC
  * Computes a small Mandelbrot set and prints an ASCII visualization.
  */
 use Array: all;

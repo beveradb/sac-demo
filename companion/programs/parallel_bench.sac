@@ -1,5 +1,5 @@
 /*
- * Parallel Benchmark - SAC
+ * Parallel Benchmark - SaC
  * Mandelbrot computation for benchmarking sequential vs multi-threaded performance.
  * The companion server measures wall-clock execution time externally.
  */

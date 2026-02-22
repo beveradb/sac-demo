@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAC - Single-Assignment C | Interactive Demo</title>
+<title>SaC - Single-Assignment C | Interactive Demo</title>
 <style>
 :root {
   --bg: #0a0a0f;
@@ -92,81 +92,229 @@ nav .nav-links a:hover { color: var(--accent2); }
 /* Hero */
 #hero {
   position: relative;
-  height: 100vh;
-  min-height: 600px;
+  min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-
-#mandelbrot-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: crosshair;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 40%, rgba(108, 92, 231, 0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 85% 25%, rgba(0, 206, 201, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 70% at 55% 85%, rgba(253, 121, 168, 0.07) 0%, transparent 45%),
+    var(--bg);
 }
 
 .hero-overlay {
-  position: relative;
-  z-index: 2;
   text-align: center;
-  pointer-events: none;
+  padding: 6rem 2rem 3rem;
+  max-width: 900px;
+  width: 100%;
 }
 
 .hero-overlay h1 {
-  font-size: clamp(3rem, 8vw, 6rem);
+  font-size: clamp(4rem, 10vw, 7rem);
   font-weight: 900;
-  letter-spacing: 6px;
-  text-shadow: 0 0 60px rgba(108, 92, 231, 0.5);
+  letter-spacing: 8px;
+  background: linear-gradient(135deg, #fff 0%, var(--accent2) 50%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 0.5rem;
+  line-height: 1;
 }
 
 .hero-overlay .subtitle {
-  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
   color: var(--text-dim);
-  max-width: 600px;
-  margin: 0 auto 2rem;
+  max-width: 560px;
+  margin: 0 auto 1.5rem;
+  letter-spacing: 0.5px;
 }
 
-.hero-code {
-  pointer-events: auto;
-  background: rgba(10, 10, 15, 0.8);
-  backdrop-filter: blur(10px);
+.hero-links {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.04);
+}
+
+.hero-link:hover {
+  border-color: var(--accent2);
+  color: var(--accent2);
+  background: rgba(0,206,201,0.08);
+}
+
+.hero-about {
+  background: rgba(255,255,255,0.03);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.2rem 1.8rem;
+  margin: 0 auto 1.5rem;
+  max-width: 700px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.hero-about strong {
+  color: var(--text);
+}
+
+.hero-docker {
+  background: rgba(0, 184, 148, 0.06);
+  border: 1px solid rgba(0, 184, 148, 0.25);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.8rem;
+  margin: 0 auto;
+  max-width: 700px;
   text-align: left;
-  display: inline-block;
+}
+
+.hero-docker-label {
+  font-size: 0.78rem;
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.hero-docker-cmd {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.hero-docker-cmd code {
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  line-height: 1.7;
-  color: var(--text-dim);
-  max-width: 90vw;
+  color: var(--accent2);
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
 }
 
-.hero-code .kw { color: var(--accent); }
-.hero-code .fn { color: var(--accent2); }
-.hero-code .num { color: var(--accent4); }
-.hero-code .cmt { color: #555570; font-style: italic; }
+.hero-docker-copy {
+  background: rgba(0, 184, 148, 0.15);
+  border: 1px solid rgba(0, 184, 148, 0.35);
+  color: var(--success);
+  padding: 0.25rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
 
-.hero-hint {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
+.hero-docker-copy:hover {
+  background: rgba(0, 184, 148, 0.3);
+}
+
+.hero-docker-hint {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hero-scroll-hint {
+  display: block;
+  text-align: center;
+  padding-bottom: 2rem;
   color: var(--text-dim);
   font-size: 0.8rem;
-  animation: pulse 2s ease-in-out infinite;
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  animation: pulse 2.5s ease-in-out infinite;
 }
 
+.hero-scroll-hint:hover { opacity: 1; }
+
 @keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }
+
+/* Mandelbrot section */
+.mandelbrot-section-demo {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .mandelbrot-section-demo { grid-template-columns: 1fr; }
+}
+
+.mandelbrot-canvas-wrap {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+#mandelbrot-canvas {
+  width: 100%;
+  aspect-ratio: 16/10;
+  display: block;
+  cursor: crosshair;
+}
+
+.mandelbrot-hint {
+  position: absolute;
+  bottom: 0.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.55);
+  font-size: 0.72rem;
+  background: rgba(0,0,0,0.5);
+  padding: 0.25rem 0.8rem;
+  border-radius: 20px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.mandelbrot-code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.mandelbrot-code .kw { color: var(--accent); }
+.mandelbrot-code .fn { color: var(--accent2); }
+.mandelbrot-code .num { color: var(--accent4); }
+.mandelbrot-code .typ { color: var(--accent3); }
+.mandelbrot-code .cmt { color: #555570; font-style: italic; }
 
 /* Sections */
 section {
@@ -690,7 +838,7 @@ footer a {
   margin: 0 auto;
 }
 
-/* ========== SAC Companion Styles ========== */
+/* ========== SaC Companion Styles ========== */
 
 /* Status indicator pill */
 .sac-companion-indicator {
@@ -753,7 +901,7 @@ footer a {
   50% { opacity: 0.4; }
 }
 
-/* "Run Full Program in SAC" button */
+/* "Run Full Program in SaC" button */
 .sac-run-btn {
   display: inline-flex;
   align-items: center;
@@ -810,7 +958,7 @@ footer a {
   pointer-events: none;
 }
 
-/* SAC output panel */
+/* SaC output panel */
 .sac-output {
   margin-top: 0.6rem;
   border-radius: var(--radius);
@@ -862,7 +1010,7 @@ footer a {
   opacity: 0.6;
 }
 
-/* Real SAC benchmark button */
+/* Real SaC benchmark button */
 .sac-bench-btn {
   background: linear-gradient(135deg, rgba(0, 184, 148, 0.2), rgba(0, 206, 201, 0.3));
   border: 1px solid rgba(0, 184, 148, 0.4);
@@ -930,7 +1078,7 @@ footer a {
   margin: 0;
 }
 
-/* SAC Mode Toggle */
+/* SaC Mode Toggle */
 .sac-mode-toggle {
   display: inline-flex;
   border-radius: 12px;
@@ -966,7 +1114,7 @@ footer a {
   font-weight: 600;
 }
 
-/* SAC computing overlay */
+/* SaC computing overlay */
 .sac-computing-overlay {
   position: absolute;
   inset: 0;
@@ -998,7 +1146,7 @@ footer a {
   to { transform: rotate(360deg); }
 }
 
-/* SAC Computed badge (green variant of js-demo-badge) */
+/* SaC Computed badge (green variant of js-demo-badge) */
 .sac-computed-badge {
   display: inline-block;
   font-family: sans-serif;
@@ -1015,7 +1163,7 @@ footer a {
   animation: fadeInUp 0.3s ease forwards;
 }
 
-/* N-body SAC compute button */
+/* N-body SaC compute button */
 .nbody-sac-btn {
   display: inline-flex;
   align-items: center;
@@ -1045,53 +1193,55 @@ footer a {
 <body>
 
 <nav>
-  <div class="logo">SAC</div>
+  <div class="logo">SaC</div>
   <ul class="nav-links">
     <li><a href="#intro">About</a></li>
     <li><a href="#arrays">Arrays</a></li>
     <li><a href="#tensors">Tensors</a></li>
     <li><a href="#stencil">Stencil</a></li>
+    <li><a href="#mandelbrot">Mandelbrot</a></li>
     <li><a href="#parallel">Parallel</a></li>
     <li><a href="#nbody">N-Body</a></li>
   </ul>
 </nav>
 
-<!-- Hero: Mandelbrot -->
+<!-- Hero: Static gradient -->
 <section id="hero">
-  <canvas id="mandelbrot-canvas"></canvas>
   <div class="hero-overlay">
-    <h1>SAC</h1>
-    <p class="subtitle">Single-Assignment C: Functional Array Programming for High-Performance Computing</p>
-    <div class="hero-code">
-      <span class="cmt">// Mandelbrot in SAC &mdash; the entire computation</span><br>
-      <span class="typ">complex</span>[.,.] <span class="fn">mandelbrot</span>(<span class="typ">int</span> N, <span class="typ">int</span> iters) {<br>
-      &nbsp;&nbsp;plane = { [i,j] -&gt; <span class="fn">toc</span>((<span class="typ">double</span>)j/N*<span class="num">3.0</span>-<span class="num">2.0</span>, (<span class="typ">double</span>)i/N*<span class="num">2.0</span>-<span class="num">1.0</span>) };<br>
-      &nbsp;&nbsp;z = <span class="fn">genarray</span>(<span class="fn">shape</span>(plane), <span class="fn">toc</span>(<span class="num">0.0</span>,<span class="num">0.0</span>));<br>
-      &nbsp;&nbsp;<span class="kw">for</span> (k=<span class="num">0</span>; k&lt;iters; k++) z = z*z + plane;<br>
-      &nbsp;&nbsp;<span class="kw">return</span> z;<br>
-      }
+    <h1>SaC</h1>
+    <p class="subtitle">Single-Assignment C &mdash; Functional Array Programming for High-Performance Computing</p>
+    <div class="hero-links">
+      <a href="https://www.sac-home.org" target="_blank" class="hero-link">&#127760; SaC Project Website</a>
+      <a href="https://github.com/beveradb/sac-demo" target="_blank" class="hero-link">&#9889; GitHub Demo Repo</a>
     </div>
-    <div class="eli5 eli5-hero">
-      <div class="eli5-label">OK but what am I looking at?</div>
-      <p>That trippy background? It's a <strong>Mandelbrot fractal</strong> &mdash; basically, for every pixel, you run a tiny math formula in a loop and color it based on how many loops it took to "escape." That's it. The wild part is that the SAC code above is <strong>the whole thing</strong>. No pixel loops, no color mapping code, no threading. In Python you'd need 40+ lines and it'd be slow. SAC does it in 5 lines and the compiler figures out how to blast it across all your CPU cores.</p>
+    <div class="hero-about">
+      <p>An interactive demo showcasing SaC's capabilities with live visualizations. Every example can run as a <strong>JavaScript simulation</strong> right in your browser, or you can connect a locally-running <strong>SaC compiler</strong> container to execute genuine compiled SaC code.</p>
+    </div>
+    <div class="hero-docker">
+      <div class="hero-docker-label">&#9654; Run real SaC code locally (optional)</div>
+      <div class="hero-docker-cmd">
+        <code id="hero-docker-cmd-text">docker run --rm -p 7227:7227 beveradb/sac-demo-companion</code>
+        <button class="hero-docker-copy" onclick="navigator.clipboard.writeText('docker run --rm -p 7227:7227 beveradb/sac-demo-companion').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)}).catch(()=>{})">Copy</button>
+      </div>
+      <p class="hero-docker-hint">Once running, this page auto-detects the companion and unlocks <strong style="color:var(--success)">"Run in SaC"</strong> buttons on every code block &mdash; letting you edit and compile real SaC programs.</p>
     </div>
   </div>
-  <div class="hero-hint">Click to pause &middot; Scroll to zoom &middot; Drag to pan</div>
+  <a href="#intro" class="hero-scroll-hint">&#8595; Explore the demos</a>
 </section>
 
 <div class="section-divider"></div>
 
-<!-- What is SAC? -->
+<!-- What is SaC? -->
 <section id="intro">
-  <h2>What is SAC?</h2>
+  <h2>What is SaC?</h2>
   <p class="section-sub">
-    SAC (Single-Assignment C) is a <strong>functional array programming language</strong> with C-like syntax.
+    SaC (Single-Assignment C) is a <strong>functional array programming language</strong> with C-like syntax.
     It compiles to highly optimized sequential, multi-threaded, and GPU code &mdash; automatically.
   </p>
   <div class="eli5">
     <div class="eli5-label">Plain English version</div>
     <p>You know how in PHP/Python/JS, when you need to do something to every item in an array, you write a <code>foreach</code> loop? And if you have a grid (array of arrays), you write nested loops? And if you want it fast, you cry?</p>
-    <p><strong>SAC is a language where you just say "do this to the whole array" and the compiler writes all those loops for you</strong> &mdash; and makes them run on multiple CPU cores (or even a GPU) automatically. You write code that looks like C, but you never mutate variables (that's the "single-assignment" part &mdash; like <code>const</code> everything), and the compiler uses that guarantee to safely parallelize your code without you thinking about it.</p>
+    <p><strong>SaC is a language where you just say "do this to the whole array" and the compiler writes all those loops for you</strong> &mdash; and makes them run on multiple CPU cores (or even a GPU) automatically. You write code that looks like C, but you never mutate variables (that's the "single-assignment" part &mdash; like <code>const</code> everything), and the compiler uses that guarantee to safely parallelize your code without you thinking about it.</p>
     <p>Think of it as: <strong>NumPy's array operations, but as an actual compiled language that runs as fast as hand-tuned C.</strong></p>
   </div>
 
@@ -1128,11 +1278,11 @@ footer a {
 <!-- Interactive Array Operations -->
 <section id="arrays">
   <h2>Interactive Array Operations</h2>
-  <p class="section-sub">Watch SAC's rank-polymorphic operations transform arrays in real time.</p>
+  <p class="section-sub">Watch SaC's rank-polymorphic operations transform arrays in real time.</p>
 
   <div class="eli5">
     <div class="eli5-label">What's happening here</div>
-    <p>Below is a grid of numbers. Click the buttons to rearrange it. <strong>"Rank-polymorphic" just means the same function works whether you give it a 1D list, a 2D grid, or a 3D cube.</strong> In PHP, you'd write different code for each. In SAC, <code>transpose(x)</code> just works on any of them.</p>
+    <p>Below is a grid of numbers. Click the buttons to rearrange it. <strong>"Rank-polymorphic" just means the same function works whether you give it a 1D list, a 2D grid, or a 3D cube.</strong> In PHP, you'd write different code for each. In SaC, <code>transpose(x)</code> just works on any of them.</p>
     <p>Try switching between 1D / 2D / 3D above the grid, then click "transpose" on each one &mdash; same function, different shaped data, it just figures it out. It's like if <code>array_reverse()</code> in PHP also worked on nested arrays automatically.</p>
   </div>
 
@@ -1158,8 +1308,8 @@ footer a {
     </div>
     <div>
       <div class="code-block" id="array-code">
-        <span class="label">SAC</span>
-        <span class="cmt">// Select an operation to see the SAC code</span><br>
+        <span class="label">SaC</span>
+        <span class="cmt">// Select an operation to see the SaC code</span><br>
         <span class="typ">int</span>[*] result = <span class="fn">operation</span>(matrix);
       </div>
     </div>
@@ -1171,12 +1321,12 @@ footer a {
 <!-- Tensor Comprehensions -->
 <section id="tensors">
   <h2>Tensor Comprehensions</h2>
-  <p class="section-sub">SAC's with-loops are powerful tensor comprehensions that express complex array transformations concisely.</p>
+  <p class="section-sub">SaC's with-loops are powerful tensor comprehensions that express complex array transformations concisely.</p>
 
   <div class="eli5">
     <div class="eli5-label">Wait, "tensor comprehension"?</div>
     <p>OK, forget the word "tensor" &mdash; it's just a fancy word for "array that might have multiple dimensions." And a "comprehension" is just a shorthand for building a new array. <strong>You know list comprehensions in Python?</strong> Like <code>[x*2 for x in my_list]</code>? This is the same idea, but for grids/matrices/cubes.</p>
-    <p>The syntax <code>{ [i,j] -&gt; A[j,i] }</code> says: "make me a new 2D array where the value at position (i,j) is whatever's at position (j,i) in the original." That's a transpose &mdash; rows become columns. Click the presets below to see different operations. <strong>Each one is a single line of SAC code.</strong></p>
+    <p>The syntax <code>{ [i,j] -&gt; A[j,i] }</code> says: "make me a new 2D array where the value at position (i,j) is whatever's at position (j,i) in the original." That's a transpose &mdash; rows become columns. Click the presets below to see different operations. <strong>Each one is a single line of SaC code.</strong></p>
     <div class="eli5-compare">
       <div class="eli5-compare-box">
         <div class="compare-label" style="color: var(--accent4);">Python equivalent</div>
@@ -1184,7 +1334,7 @@ footer a {
           for i in range(n)]</pre>
       </div>
       <div class="eli5-compare-box">
-        <div class="compare-label" style="color: var(--accent2);">SAC</div>
+        <div class="compare-label" style="color: var(--accent2);">SaC</div>
         <pre>result = { [i,j] -> A[j,i] };</pre>
       </div>
     </div>
@@ -1201,7 +1351,7 @@ footer a {
   <div class="tensor-demo">
     <div>
       <div class="code-block" id="tensor-code">
-        <span class="label">SAC</span>
+        <span class="label">SaC</span>
       </div>
       <div style="margin-top:1.5rem">
         <div class="tensor-viz" id="tensor-viz"></div>
@@ -1209,7 +1359,7 @@ footer a {
     </div>
     <div>
       <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
-        <strong style="color: var(--accent2);">With-loops</strong> are SAC's generalization of array comprehensions.
+        <strong style="color: var(--accent2);">With-loops</strong> are SaC's generalization of array comprehensions.
         They describe the value at each index position, and the compiler automatically
         parallelizes the computation.
       </p>
@@ -1230,13 +1380,13 @@ footer a {
 <!-- Stencil Convolution -->
 <section id="stencil">
   <h2>Stencil Convolution</h2>
-  <p class="section-sub">Apply image filters using SAC's elegant stencil operations. The compiler optimizes boundary handling and memory access automatically.</p>
+  <p class="section-sub">Apply image filters using SaC's elegant stencil operations. The compiler optimizes boundary handling and memory access automatically.</p>
 
   <div class="eli5">
     <div class="eli5-label">Convolution = Instagram filter math</div>
     <p>You know Instagram filters? Blur, sharpen, find edges? Under the hood, they all work the same way: <strong>for each pixel, look at its neighbors, multiply them by some numbers, and add them up.</strong> Those "some numbers" are the <strong>kernel</strong> &mdash; the little 3&times;3 grid you'll see below.</p>
     <p>For example, the blur kernel averages each pixel with its neighbors (making everything smoothly blend together). The edge detection kernel <em>subtracts</em> neighbors from the center, so flat areas become black and edges light up. <strong>Same code structure, different numbers in the kernel = completely different visual effect.</strong></p>
-    <p>In SAC, this whole operation is one nested comprehension. In JS/Python, you'd write 4 nested for-loops and worry about array bounds. The SAC compiler handles boundaries, memory layout, and parallelization automatically.</p>
+    <p>In SaC, this whole operation is one nested comprehension. In JS/Python, you'd write 4 nested for-loops and worry about array bounds. The SaC compiler handles boundaries, memory layout, and parallelization automatically.</p>
   </div>
 
   <div class="stencil-demo">
@@ -1264,7 +1414,46 @@ footer a {
     </div>
     <div>
       <div class="code-block" id="stencil-code">
-        <span class="label">SAC</span>
+        <span class="label">SaC</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Mandelbrot Fractal Visualizer -->
+<section id="mandelbrot">
+  <h2>Mandelbrot Fractal</h2>
+  <p class="section-sub">The iconic fractal rendered in 5 lines of SaC &mdash; the compiler parallelizes the entire computation automatically across all CPU cores.</p>
+
+  <div class="eli5">
+    <div class="eli5-label">What is this?</div>
+    <p>For every pixel, you run a tiny math formula in a loop and color it based on how many iterations it took to "escape." That's it. The wild part is that <strong>the SaC code shown here is the whole computation</strong>. No pixel loops, no color mapping code, no threading. In Python you'd need 40+ lines and it'd be slow. SaC does it in 5 lines, and the compiler figures out how to blast the computation across all your CPU cores automatically.</p>
+  </div>
+
+  <div class="mandelbrot-section-demo" style="margin-top:2rem">
+    <div>
+      <div class="mandelbrot-canvas-wrap">
+        <canvas id="mandelbrot-canvas"></canvas>
+        <div class="mandelbrot-hint">Click to pause &middot; Scroll to zoom &middot; Drag to pan</div>
+      </div>
+    </div>
+    <div>
+      <div class="mandelbrot-code">
+        <span class="cmt">// Mandelbrot in SaC &mdash; the entire computation</span><br>
+        <span class="typ">complex</span>[.,.] <span class="fn">mandelbrot</span>(<span class="typ">int</span> N, <span class="typ">int</span> iters) {<br>
+        &nbsp;&nbsp;plane = { [i,j] -&gt; <span class="fn">toc</span>((<span class="typ">double</span>)j/N*<span class="num">3.0</span>-<span class="num">2.0</span>, (<span class="typ">double</span>)i/N*<span class="num">2.0</span>-<span class="num">1.0</span>) };<br>
+        &nbsp;&nbsp;z = <span class="fn">genarray</span>(<span class="fn">shape</span>(plane), <span class="fn">toc</span>(<span class="num">0.0</span>,<span class="num">0.0</span>));<br>
+        &nbsp;&nbsp;<span class="kw">for</span> (k=<span class="num">0</span>; k&lt;iters; k++) z = z*z + plane;<br>
+        &nbsp;&nbsp;<span class="kw">return</span> z;<br>
+        }
+      </div>
+      <div style="margin-top:1.5rem">
+        <p style="color:var(--text-dim); font-size:0.9rem; line-height:1.7;">
+          <strong style="color:var(--accent2)">No explicit loops.</strong> The with-loop <code style="background:rgba(0,0,0,0.3);padding:0.1rem 0.4rem;border-radius:3px;font-family:var(--font-mono);font-size:0.85em;color:var(--accent4)">{ [i,j] -&gt; ... }</code> declares the value at every coordinate simultaneously &mdash; the compiler turns this into parallel work automatically.<br><br>
+          <strong style="color:var(--accent)">Next section:</strong> see the same computation benchmarked with 1, 2, 4, and 8 threads to measure the real-world speedup.
+        </p>
       </div>
     </div>
   </div>
@@ -1275,13 +1464,13 @@ footer a {
 <!-- Parallelization Demo -->
 <section id="parallel">
   <h2>Parallelization Demo</h2>
-  <p class="section-sub">Same Mandelbrot code, different thread counts. SAC's compiler automatically distributes work across cores &mdash; no code changes needed.</p>
+  <p class="section-sub">Same Mandelbrot code, different thread counts. SaC's compiler automatically distributes work across cores &mdash; no code changes needed.</p>
 
   <div class="eli5">
     <div class="eli5-label">Why parallelization is a big deal</div>
     <p>Your CPU has multiple cores (probably 4-16). Most code only uses <strong>one</strong> of them. Getting code to use all of them is called parallelization, and in most languages it's a nightmare &mdash; you're dealing with threads, locks, race conditions, and bugs that only happen on Tuesdays.</p>
-    <p><strong>SAC's whole trick is: because variables never change (single-assignment), the compiler can mathematically prove it's safe to split the work across cores.</strong> No data races possible. You literally just recompile with a different flag: <code>-t seq</code> for one core, <code>-t mt_pth</code> for all cores, <code>-t cuda</code> for GPU. Same source file.</p>
-    <p>Click "Run Benchmark" to see this in action. It computes a Mandelbrot set and shows how splitting work across more threads speeds things up. (This is simulated in your browser, but the principle is identical to what SAC does natively.)</p>
+    <p><strong>SaC's whole trick is: because variables never change (single-assignment), the compiler can mathematically prove it's safe to split the work across cores.</strong> No data races possible. You literally just recompile with a different flag: <code>-t seq</code> for one core, <code>-t mt_pth</code> for all cores, <code>-t cuda</code> for GPU. Same source file.</p>
+    <p>Click "Run Benchmark" to see this in action. It computes a Mandelbrot set and shows how splitting work across more threads speeds things up. (This is simulated in your browser, but the principle is identical to what SaC does natively.)</p>
   </div>
 
   <div class="parallel-demo">
@@ -1297,7 +1486,7 @@ footer a {
     </div>
     <div>
       <div class="code-block">
-        <span class="label">SAC</span>
+        <span class="label">SaC</span>
         <span class="cmt">// Exact same source code for all targets:</span><br><br>
         <span class="cmt">// Sequential:</span><br>
         $ sac2c -t <span class="str">seq</span> mandelbrot.sac<br><br>
@@ -1323,13 +1512,13 @@ footer a {
 <!-- N-Body Simulation -->
 <section id="nbody">
   <h2>N-Body Gravity Simulation</h2>
-  <p class="section-sub">200 particles interacting through gravity, expressed as a concise all-pairs computation in SAC.</p>
+  <p class="section-sub">200 particles interacting through gravity, expressed as a concise all-pairs computation in SaC.</p>
 
   <div class="eli5">
     <div class="eli5-label">Space particles for people who failed physics</div>
     <p>Every dot below is a "particle" with mass, and they all pull on each other with gravity (like tiny planets). To figure out how each particle moves, you need to calculate the gravitational pull from <strong>every other particle</strong>. With 200 particles, that's 200 &times; 199 = <strong>39,800 force calculations per frame</strong>.</p>
-    <p>In Python, this would be a double <code>for</code> loop and it'd be painfully slow. In SAC, the code on the right says "for each particle i, sum up the forces from all other particles j" &mdash; <strong>and the compiler parallelizes the outer loop automatically</strong>. Each particle's forces can be computed independently on different cores.</p>
-    <p>Try <strong>Sequential View</strong> &mdash; it highlights particles one at a time (this is how a single-threaded program processes them). Then switch to <strong>Parallel View</strong> &mdash; all particles are processed at once. That's the SAC difference.</p>
+    <p>In Python, this would be a double <code>for</code> loop and it'd be painfully slow. In SaC, the code on the right says "for each particle i, sum up the forces from all other particles j" &mdash; <strong>and the compiler parallelizes the outer loop automatically</strong>. Each particle's forces can be computed independently on different cores.</p>
+    <p>Try <strong>Sequential View</strong> &mdash; it highlights particles one at a time (this is how a single-threaded program processes them). Then switch to <strong>Parallel View</strong> &mdash; all particles are processed at once. That's the SaC difference.</p>
   </div>
 
   <div class="nbody-demo">
@@ -1344,7 +1533,7 @@ footer a {
     </div>
     <div>
       <div class="code-block">
-        <span class="label">SAC</span>
+        <span class="label">SaC</span>
         <span class="cmt">// All-pairs gravitational acceleration</span><br>
         <span class="typ">double</span>[n,<span class="num">3</span>] <span class="fn">accelerations</span>(<span class="typ">double</span>[n,<span class="num">3</span>] pos, <span class="typ">double</span>[n] mass) {<br>
         &nbsp;&nbsp;<span class="kw">return</span> { [i] -&gt; <span class="fn">sum</span>({<br>
@@ -1358,7 +1547,7 @@ footer a {
       <div style="margin-top:1.5rem">
         <p style="color: var(--text-dim); font-size: 0.9rem;">
           <strong style="color:var(--accent2)">Sequential view:</strong> highlights particles one-by-one as their forces are computed serially.<br><br>
-          <strong style="color:var(--accent)">Parallel view:</strong> all forces computed simultaneously &mdash; this is what SAC's compiler achieves automatically.
+          <strong style="color:var(--accent)">Parallel view:</strong> all forces computed simultaneously &mdash; this is what SaC's compiler achieves automatically.
         </p>
       </div>
     </div>
@@ -1367,15 +1556,16 @@ footer a {
 
 <footer>
   <p>
-    SAC &mdash; Single-Assignment C &middot;
+    SaC &mdash; Single-Assignment C &middot;
     <a href="https://www.sac-home.org" target="_blank">sac-home.org</a> &middot;
+    <a href="https://github.com/beveradb/sac-demo" target="_blank">GitHub</a> &middot;
     Interactive demo showcasing functional array programming
   </p>
 </footer>
 
 <script>
 // ============================================================
-// GLOBAL SAC MODE STATE
+// GLOBAL SaC MODE STATE
 // ============================================================
 window.__sacModeCallbacks = [];
 window.__sacRegisterModeCallback = function(cb) { window.__sacModeCallbacks.push(cb); };
@@ -1383,7 +1573,7 @@ window.__sacGetComputeMode = function() { return 'js'; }; // overridden by compa
 window.__sacCompanionUrl = 'http://localhost:7227';
 
 // ============================================================
-// MANDELBROT HERO
+// MANDELBROT FRACTAL VISUALIZER
 // ============================================================
 (function() {
   const canvas = document.getElementById('mandelbrot-canvas');
@@ -1637,7 +1827,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       container.style.position = 'relative';
       container.appendChild(ov);
     }
-    ov.textContent = text || 'Computing in SAC...';
+    ov.textContent = text || 'Computing in SaC...';
     return ov;
   }
   function hideOverlay(container) {
@@ -1663,7 +1853,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   document.querySelectorAll('.array-controls .btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const op = btn.dataset.op;
-      codeEl.innerHTML = `<span class="label">SAC</span>\n` + (sacCode[op] || sacCode.reset);
+      codeEl.innerHTML = `<span class="label">SaC</span>\n` + (sacCode[op] || sacCode.reset);
 
       if (op === 'reset') {
         matrix = makeMatrix(currentDim);
@@ -1673,7 +1863,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
       if (window.__sacGetComputeMode() === 'sac' && ops[op]) {
         const container = grid.parentElement;
-        showOverlay(container, 'Computing in SAC...');
+        showOverlay(container, 'Computing in SaC...');
         try {
           const resp = await fetch(window.__sacCompanionUrl + '/compute', {
             method: 'POST',
@@ -1684,11 +1874,11 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
           if (data.success && data.result && data.result.shape && data.result.data) {
             matrix = data.result;
           } else {
-            console.error('SAC array_op fallback:', data.error);
+            console.error('SaC array_op fallback:', data.error);
             applyOpJS(op);
           }
         } catch (e) {
-          console.error('SAC array_op fetch error, falling back to JS:', e);
+          console.error('SaC array_op fetch error, falling back to JS:', e);
           applyOpJS(op);
         }
         hideOverlay(container);
@@ -1706,7 +1896,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       currentDim = parseInt(btn.dataset.dim);
       matrix = makeMatrix(currentDim);
       renderGrid(matrix);
-      codeEl.innerHTML = `<span class="label">SAC</span>\n<span class="cmt">// ${currentDim}D array - same operations apply!</span>\n<span class="typ">int</span>[${'.'.repeat(currentDim).split('').join(',')}] arr = ...;`;
+      codeEl.innerHTML = `<span class="label">SaC</span>\n<span class="cmt">// ${currentDim}D array - same operations apply!</span>\n<span class="typ">int</span>[${'.'.repeat(currentDim).split('').join(',')}] arr = ...;`;
     });
   });
 
@@ -1802,7 +1992,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
   async function showPreset(name) {
     const p = presets[name];
-    codeEl.innerHTML = `<span class="label">SAC</span>\n` + p.code;
+    codeEl.innerHTML = `<span class="label">SaC</span>\n` + p.code;
 
     if (window.__sacGetComputeMode() === 'sac') {
       try {
@@ -1816,9 +2006,9 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
           renderViz(name, data.result.matrix);
           return;
         }
-        console.error('SAC tensor fallback:', data.error);
+        console.error('SaC tensor fallback:', data.error);
       } catch (e) {
-        console.error('SAC tensor fetch error, falling back to JS:', e);
+        console.error('SaC tensor fetch error, falling back to JS:', e);
       }
     }
     renderViz(name, p.fn(src));
@@ -1961,7 +2151,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       else cell.style.color = 'var(--text-dim)';
       kernelDisplay.appendChild(cell);
     });
-    codeEl.innerHTML = `<span class="label">SAC</span>\n` + sacCodeMap[kernelName];
+    codeEl.innerHTML = `<span class="label">SaC</span>\n` + sacCodeMap[kernelName];
     filterLabel.textContent = k.name;
   }
 
@@ -1973,7 +2163,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       container.style.position = 'relative';
       const ov = document.createElement('div');
       ov.className = 'sac-computing-overlay';
-      ov.textContent = 'Computing in SAC...';
+      ov.textContent = 'Computing in SaC...';
       container.appendChild(ov);
 
       try {
@@ -1990,9 +2180,9 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
           ov.remove();
           return;
         }
-        console.error('SAC stencil fallback:', data.error);
+        console.error('SaC stencil fallback:', data.error);
       } catch (e) {
-        console.error('SAC stencil fetch error, falling back to JS:', e);
+        console.error('SaC stencil fetch error, falling back to JS:', e);
       }
       ov.remove();
     }
@@ -2235,7 +2425,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   let lastFpsTime = performance.now();
   let fps = 0;
 
-  // SAC playback state
+  // SaC playback state
   let sacFrames = null;
   let sacFrameIdx = 0;
   let sacPlayback = false;
@@ -2263,7 +2453,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   }
 
   function step() {
-    // If playing back SAC frames, use those positions
+    // If playing back SaC frames, use those positions
     if (sacPlayback && sacFrames && sacFrameIdx < sacFrames.length) {
       const frame = sacFrames[sacFrameIdx];
       for (let i = 0; i < Math.min(N, frame.positions.length); i++) {
@@ -2274,7 +2464,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       if (sacFrameIdx >= sacFrames.length) {
         sacPlayback = false;
         sacFrames = null;
-        if (sacBtnEl) sacBtnEl.textContent = 'Compute in SAC (done - resumed JS)';
+        if (sacBtnEl) sacBtnEl.textContent = 'Compute in SaC (done - resumed JS)';
       }
       return;
     }
@@ -2356,7 +2546,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         glowSize = nearHighlight ? radius * 4 : radius;
       }
 
-      // Green tint during SAC playback
+      // Green tint during SaC playback
       const hue = sacPlayback ? 160 : p.hue;
 
       // Glow
@@ -2396,18 +2586,18 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       frameCount = 0;
       lastFpsTime = now;
     }
-    const modeLabel = sacPlayback ? 'SAC Playback' : (mode === 'parallel' ? 'Parallel' : 'Sequential');
+    const modeLabel = sacPlayback ? 'SaC Playback' : (mode === 'parallel' ? 'Parallel' : 'Sequential');
     statsEl.textContent = `Particles: ${N} | Mode: ${modeLabel}${sacPlayback ? ` (${sacFrameIdx}/${sacFrames ? sacFrames.length : 0})` : ''} | FPS: ${fps}`;
 
     requestAnimationFrame(render);
   }
 
-  // SAC batch compute
+  // SaC batch compute
   async function computeInSac() {
     if (!sacBtnEl || sacBtnEl.disabled) return;
     sacBtnEl.disabled = true;
     const nSteps = 120;
-    sacBtnEl.textContent = `Computing ${nSteps} steps in SAC...`;
+    sacBtnEl.textContent = `Computing ${nSteps} steps in SaC...`;
 
     const positions = particles.map(p => [p.x, p.y]);
     const velocities = particles.map(p => [p.vx, p.vy]);
@@ -2427,17 +2617,17 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         sacFrames = data.result.frames;
         sacFrameIdx = 0;
         sacPlayback = true;
-        sacBtnEl.textContent = `Playing ${sacFrames.length} SAC frames...`;
+        sacBtnEl.textContent = `Playing ${sacFrames.length} SaC frames...`;
         // Clear canvas for fresh playback
         const dpr = window.devicePixelRatio || 1;
         ctx.fillStyle = '#050508';
         ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
       } else {
-        console.error('SAC nbody error:', data.error);
-        sacBtnEl.textContent = 'SAC compute failed - try again';
+        console.error('SaC nbody error:', data.error);
+        sacBtnEl.textContent = 'SaC compute failed - try again';
       }
     } catch (e) {
-      console.error('SAC nbody fetch error:', e);
+      console.error('SaC nbody fetch error:', e);
       sacBtnEl.textContent = 'Connection error - try again';
     }
 
@@ -2449,7 +2639,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     if (!controls || controls.querySelector('.nbody-sac-btn')) return;
     sacBtnEl = document.createElement('button');
     sacBtnEl.className = 'nbody-sac-btn';
-    sacBtnEl.textContent = 'Compute 120 Steps in SAC';
+    sacBtnEl.textContent = 'Compute 120 Steps in SaC';
     sacBtnEl.addEventListener('click', computeInSac);
     controls.appendChild(sacBtnEl);
   }
@@ -2500,7 +2690,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 })();
 
 // ============================================================
-// SAC COMPANION - Real sac2c integration
+// SaC COMPANION - Real sac2c integration
 // ============================================================
 (function() {
   const COMPANION_URL = 'http://localhost:7227';
@@ -2531,7 +2721,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       <span class="sac-companion-text"></span>
       <div class="sac-mode-toggle" style="display:none">
         <span class="toggle-option active-js" data-mode="js">JS</span>
-        <span class="toggle-option" data-mode="sac">SAC</span>
+        <span class="toggle-option" data-mode="sac">SaC</span>
       </div>`;
     document.body.appendChild(indicatorEl);
 
@@ -2648,7 +2838,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       if (!el || el.querySelector('.js-demo-badge') || el.querySelector('.sac-computed-badge')) return;
       const badge = document.createElement('div');
       badge.className = computeMode === 'sac' ? 'sac-computed-badge' : 'js-demo-badge';
-      badge.textContent = computeMode === 'sac' ? 'SAC Computed' : 'Interactive JS Demo';
+      badge.textContent = computeMode === 'sac' ? 'SaC Computed' : 'Interactive JS Demo';
       badge.dataset.sacBadge = 'true';
       el.insertBefore(badge, el.firstChild);
       demoBadges.push(badge);
@@ -2664,7 +2854,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     demoBadges.forEach(badge => {
       if (mode === 'sac') {
         badge.className = 'sac-computed-badge';
-        badge.textContent = 'SAC Computed';
+        badge.textContent = 'SaC Computed';
       } else {
         badge.className = 'js-demo-badge';
         badge.textContent = 'Interactive JS Demo';
@@ -2680,7 +2870,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
     const toast = document.createElement('div');
     toast.className = 'companion-toast';
-    toast.textContent = "SAC compiler detected \u2014 use the JS/SAC toggle to drive visualizations with real compiled SAC code.";
+    toast.textContent = "SaC compiler detected \u2014 use the JS/SaC toggle to drive visualizations with real compiled SaC code.";
     indicatorEl.appendChild(toast);
 
     // Collapse after 8 seconds
@@ -2691,9 +2881,9 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   }
 
   function onConnect() {
-    updateIndicator(true, 'SAC Runtime Connected');
+    updateIndicator(true, 'SaC Runtime Connected');
     if (indicatorEl) {
-      indicatorEl.title = "A real sac2c compiler is available via Docker. Toggle JS/SAC to drive visualizations with real compiled SAC code.";
+      indicatorEl.title = "A real sac2c compiler is available via Docker. Toggle JS/SaC to drive visualizations with real compiled SaC code.";
     }
     showToggle();
     addRunButtons();
@@ -2703,7 +2893,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   }
 
   function onDisconnect() {
-    updateIndicator(false, 'SAC Runtime Disconnected');
+    updateIndicator(false, 'SaC Runtime Disconnected');
     if (indicatorEl) {
       indicatorEl.title = '';
     }
@@ -2713,7 +2903,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     removeBadges();
   }
 
-  // ---- "Run Full Program in SAC" buttons ----
+  // ---- "Run Full Program in SaC" buttons ----
 
   // Map section code blocks to their demo program names
   const codeBlockMap = [
@@ -2730,20 +2920,20 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
       const btn = document.createElement('button');
       btn.className = 'sac-run-btn';
-      btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run Full Program in SAC';
+      btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run Full Program in SaC';
       btn.dataset.sacDemo = name;
       btn.addEventListener('click', () => handleRun(btn, codeEl, name));
       codeEl.parentNode.insertBefore(btn, codeEl.nextSibling);
       addedButtons.push(btn);
     });
 
-    // Add to other .code-block elements that have SAC code
+    // Add to other .code-block elements that have SaC code
     document.querySelectorAll('.code-block').forEach(codeEl => {
       if (codeEl.querySelector('.sac-run-btn')) return;
       if (codeEl.parentNode.querySelector('.sac-run-btn')) return;
-      // Only add if the code block has a SAC label and contains function-like code
+      // Only add if the code block has a SaC label and contains function-like code
       const label = codeEl.querySelector('.label');
-      if (!label || label.textContent.trim() !== 'SAC') return;
+      if (!label || label.textContent.trim() !== 'SaC') return;
       // Skip syntax/result-only blocks
       const text = codeEl.textContent;
       if (text.includes('sac2c -t') || text.includes('Click "Run') || text.includes('General form')) return;
@@ -2751,7 +2941,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         // N-body code block
         const btn = document.createElement('button');
         btn.className = 'sac-run-btn';
-        btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run Full Program in SAC';
+        btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run Full Program in SaC';
         btn.dataset.sacDemo = 'nbody_demo';
         btn.addEventListener('click', () => handleRun(btn, codeEl, 'nbody_demo'));
         codeEl.parentNode.insertBefore(btn, codeEl.nextSibling);
@@ -2788,11 +2978,11 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     // Show loading output
     const outputEl = document.createElement('div');
     outputEl.className = 'sac-output loading';
-    outputEl.innerHTML = '<div class="output-header">real sac2c output</div><div class="output-explainer">Compiling and running the full SAC program on a real sac2c compiler (running in Docker). The visualization above is a JavaScript simulation of the same concept.</div>Compiling and running...';
+    outputEl.innerHTML = '<div class="output-header">real sac2c output</div><div class="output-explainer">Compiling and running the full SaC program on a real sac2c compiler (running in Docker). The visualization above is a JavaScript simulation of the same concept.</div>Compiling and running...';
     btn.parentNode.insertBefore(outputEl, btn.nextSibling);
 
     try {
-      // Always use the pre-compiled demo, since code blocks show SAC fragments, not full programs
+      // Always use the pre-compiled demo, since code blocks show SaC fragments, not full programs
       const resp = await fetch(COMPANION_URL + '/compile-run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2812,21 +3002,21 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         if (data.run_time_ms > 0) timing.push(`run: ${Math.round(data.run_time_ms)}ms`);
         outputEl.innerHTML =
           `<div class="output-header"><span>real sac2c output</span><span class="output-timing">${timing.join(' | ')}</span></div>` +
-          `<div class="output-explainer">This is the actual output from compiling and running the full SAC program on a real sac2c compiler (running in Docker). The visualization above is a JavaScript simulation of the same concept.</div>` +
+          `<div class="output-explainer">This is the actual output from compiling and running the full SaC program on a real sac2c compiler (running in Docker). The visualization above is a JavaScript simulation of the same concept.</div>` +
           escapeHtml(data.stdout || '(no output)') +
           (data.stderr ? '\n' + escapeHtml(data.stderr) : '');
       } else {
         outputEl.classList.add('error');
         outputEl.innerHTML =
           `<div class="output-header">sac2c error</div>` +
-          `<div class="output-explainer">Error from compiling/running the full SAC program on a real sac2c compiler (running in Docker).</div>` +
+          `<div class="output-explainer">Error from compiling/running the full SaC program on a real sac2c compiler (running in Docker).</div>` +
           escapeHtml(data.error || 'Unknown error') +
           (data.stderr ? '\n\n' + escapeHtml(data.stderr) : '');
       }
     } catch (e) {
       outputEl.classList.remove('loading');
       outputEl.classList.add('error');
-      outputEl.innerHTML = `<div class="output-header">connection error</div><div class="output-explainer">Could not reach the Docker-based sac2c compiler.</div>Could not reach SAC companion server.\n${escapeHtml(e.message)}`;
+      outputEl.innerHTML = `<div class="output-header">connection error</div><div class="output-explainer">Could not reach the Docker-based sac2c compiler.</div>Could not reach SaC companion server.\n${escapeHtml(e.message)}`;
     }
 
     btn.innerHTML = origHTML;
@@ -2856,7 +3046,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
     benchBtn = document.createElement('button');
     benchBtn.className = 'sac-bench-btn';
-    benchBtn.textContent = 'Run Real SAC Benchmark';
+    benchBtn.textContent = 'Run Real SaC Benchmark';
     benchBtn.addEventListener('click', handleBenchmark);
     controlsEl.appendChild(benchBtn);
   }
@@ -2871,10 +3061,10 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   async function handleBenchmark() {
     if (!benchBtn || benchBtn.disabled) return;
     benchBtn.disabled = true;
-    benchBtn.textContent = 'Running SAC benchmark...';
+    benchBtn.textContent = 'Running SaC benchmark...';
 
     const resultEl = document.getElementById('speedup-result');
-    if (resultEl) resultEl.innerHTML = 'Running real SAC benchmark (compiling + executing)...';
+    if (resultEl) resultEl.innerHTML = 'Running real SaC benchmark (compiling + executing)...';
 
     try {
       const resp = await fetch(COMPANION_URL + '/benchmark', {
@@ -2884,13 +3074,13 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       const data = await resp.json();
 
       if (data.success && data.results && data.results.length > 0) {
-        // Draw real SAC results on the speedup chart
+        // Draw real SaC results on the speedup chart
         drawRealBenchmark(data.results);
         const last = data.results[data.results.length - 1];
         const first = data.results[0];
         if (resultEl) {
           resultEl.innerHTML =
-            `<strong style="color:var(--success)">Real SAC:</strong> ` +
+            `<strong style="color:var(--success)">Real SaC:</strong> ` +
             `${last.threads}-thread speedup: <strong>${last.speedup.toFixed(2)}x</strong> ` +
             `(${first.time_ms.toFixed(0)}ms &rarr; ${last.time_ms.toFixed(0)}ms)`;
         }
@@ -2898,10 +3088,10 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         if (resultEl) resultEl.innerHTML = `<span style="color:#ff7675">Benchmark failed: ${escapeHtml(data.error || 'unknown error')}</span>`;
       }
     } catch (e) {
-      if (resultEl) resultEl.innerHTML = `<span style="color:#ff7675">Could not reach SAC companion: ${escapeHtml(e.message)}</span>`;
+      if (resultEl) resultEl.innerHTML = `<span style="color:#ff7675">Could not reach SaC companion: ${escapeHtml(e.message)}</span>`;
     }
 
-    benchBtn.textContent = 'Run Real SAC Benchmark';
+    benchBtn.textContent = 'Run Real SaC Benchmark';
     benchBtn.disabled = false;
   }
 
@@ -2914,7 +3104,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     const w = speedupCanvas.clientWidth;
     const h = 220;
     // Don't resize - let the existing chart code handle sizing
-    // Just overlay the real SAC line
+    // Just overlay the real SaC line
 
     const pad = { l: 50, r: 20, t: 20, b: 40 };
     const cw = w - pad.l - pad.r;
@@ -2923,7 +3113,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     const threadCounts = results.map(r => r.threads);
     const threadIndices = [1, 2, 4, 8];
 
-    // Draw real SAC line in green
+    // Draw real SaC line in green
     ctx.save();
     ctx.scale(1/dpr, 1/dpr);
     ctx.scale(dpr, dpr);
@@ -2966,7 +3156,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     ctx.fillStyle = '#00b894';
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('Real (SAC)', pad.l + 5, pad.t + 12);
+    ctx.fillText('Real (SaC)', pad.l + 5, pad.t + 12);
 
     ctx.fillStyle = '#6c5ce7';
     ctx.fillText('Simulated (JS)', pad.l + 85, pad.t + 12);

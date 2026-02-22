@@ -1,5 +1,5 @@
 /*
- * N-Body Gravity Simulation Demo - SAC
+ * N-Body Gravity Simulation Demo - SaC
  * All-pairs gravitational acceleration computation.
  */
 use Array: all;
@@ -8,7 +8,7 @@ use Math: all;
 
 int main()
 {
-  printf("=== SAC N-Body Simulation Demo ===\n\n");
+  printf("=== SaC N-Body Simulation Demo ===\n\n");
 
   N = 8;
   G = 1.0;

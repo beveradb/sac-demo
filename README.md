@@ -1,16 +1,17 @@
-# SAC Interactive Demo
+# SaC Interactive Demo
 
-An interactive demo of [SAC (Single-Assignment C)](https://www.sac-home.org), a functional array programming language for high-performance computing.
+An interactive demo of [SaC (Single-Assignment C)](https://www.sac-home.org), a functional array programming language for high-performance computing.
 
 **Live demo:** [sacdemo.beveradb.com](https://sacdemo.beveradb.com)
 
 ## What's in the demo
 
-The page walks through SAC's key features with interactive visualizations:
+The page walks through SaC's key features with interactive visualizations — each can run as a JavaScript simulation or with a real SaC compiler:
 
 - **Array Operations** — rank-polymorphic transpose, reverse, rotate, take, drop on 1D/2D/3D arrays
 - **Tensor Comprehensions** — with-loop expressions for matrix transforms (transpose, diagonal, scaling, triangular extraction, row sums)
 - **Stencil Convolution** — image filters (blur, sharpen, edge detect, emboss) using 3x3 kernels
+- **Mandelbrot Fractal** — interactive fractal visualizer showing SaC's concise array syntax
 - **Parallelization** — Mandelbrot benchmark comparing sequential vs multi-threaded execution
 - **N-Body Simulation** — 200-particle gravity simulation with sequential vs parallel views
 
@@ -26,35 +27,37 @@ python3 -m http.server 8080
 # then open http://localhost:8080
 ```
 
-### With the real SAC compiler (Docker)
+### With the real SaC compiler (Docker)
 
-Running the companion server connects the demo to a real `sac2c` compiler. The page auto-detects it and adds "Run in SAC" buttons to every code block.
+Running the companion server connects the demo to a real `sac2c` compiler. The page auto-detects it and unlocks "Run in SaC" buttons on every code block.
 
-**Option A — Docker Compose (recommended):**
+**Quickest — one Docker command (image on Docker Hub):**
+
+```bash
+docker run --rm -p 7227:7227 beveradb/sac-demo-companion
+```
+
+Then open [sacdemo.beveradb.com](https://sacdemo.beveradb.com) (or your local `index.html`). The page detects the running container automatically.
+
+**Docker Compose (if you cloned the repo):**
 
 ```bash
 docker compose up
 ```
 
-**Option B — Docker run:**
-
-```bash
-docker run --rm -p 7227:7227 --memory=512m --cpus=4 beveradb/sac-demo-companion
-```
-
-**Option C — Build locally:**
+**Build locally from source:**
 
 ```bash
 docker build -t beveradb/sac-demo-companion ./companion
-docker run --rm -p 7227:7227 --memory=512m --cpus=4 beveradb/sac-demo-companion
+docker run --rm -p 7227:7227 beveradb/sac-demo-companion
 ```
 
 Then open `index.html` (or serve it on any port). When the companion is running:
 
-1. A green **"SAC Runtime Connected"** indicator appears in the bottom-right corner
-2. **"Run in SAC"** buttons appear on every code block
-3. Code blocks become editable — modify the SAC code and run your changes
-4. The parallelization section gets a **"Run Real SAC Benchmark"** button that shows actual seq vs mt_pth timing
+1. A green **"SaC Runtime Connected"** indicator appears in the bottom-right corner
+2. **"Run in SaC"** buttons appear on every code block
+3. Code blocks become editable — modify the SaC code and run your changes
+4. The parallelization section gets a **"Run Real SaC Benchmark"** button that shows actual seq vs mt_pth timing
 
 When you stop the companion, the page gracefully falls back to JS-only mode. No errors, no broken state.
 
@@ -67,7 +70,7 @@ Browser (index.html)                    Docker (localhost:7227)
                                          Pre-compiled demo binaries
   On load: fetch /health ──────────────>
   If OK: show indicator, add buttons
-  "Run in SAC" ── POST /compile-run ───>  Compile + run, return output
+  "Run in SaC" ── POST /compile-run ───>  Compile + run, return output
   Benchmark ───── POST /benchmark ─────>  seq vs mt_pth real timing
 ```
 
@@ -78,12 +81,12 @@ The page is a single self-contained `index.html` with no build step. The compani
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Returns `{ status, sac2c_version, precompiled[] }` |
-| `/compile-run` | POST | Accepts `{ code, target, threads }`, compiles and runs SAC code |
+| `/compile-run` | POST | Accepts `{ code, target, threads }`, compiles and runs SaC code |
 | `/benchmark` | POST | Runs Mandelbrot with seq and mt_pth at 1/2/4/8 threads |
 
 ### Demo programs
 
-Pre-written SAC programs in `companion/programs/`:
+Pre-written SaC programs in `companion/programs/`:
 
 | File | Description |
 |------|-------------|
@@ -108,7 +111,7 @@ These are pre-compiled at Docker build time for instant execution. User-edited c
 │   ├── server.py           # FastAPI server (3 endpoints)
 │   ├── entrypoint.sh       # Container startup script
 │   ├── requirements.txt    # Python dependencies (fastapi, uvicorn)
-│   └── programs/           # Pre-written SAC demo programs
+│   └── programs/           # Pre-written SaC demo programs
 │       ├── array_ops_demo.sac
 │       ├── tensor_demo.sac
 │       ├── stencil_demo.sac
