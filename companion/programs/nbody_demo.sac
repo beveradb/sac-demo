@@ -14,7 +14,7 @@ int main()
   G = 1.0;
   DT = 0.01;
   SOFTENING = 0.1;
-  STEPS = 10;
+  NSTEPS = 10;
 
   /* Initialize positions in a circle */
   pos = with {
@@ -45,27 +45,26 @@ int main()
   printf("\n");
 
   /* Run simulation */
-  for (step = 0; step < STEPS; step++) {
+  for (t = 0; t < NSTEPS; t++) {
     /* Compute accelerations (all-pairs) */
     acc = with {
-      ([0,0] <= [i,k] < [N, 2]):
-        {
-          a = 0.0;
-          for (j = 0; j < N; j++) {
-            if (j != i) {
-              dx = pos[j,0] - pos[i,0];
-              dy = pos[j,1] - pos[i,1];
-              distSq = dx*dx + dy*dy + SOFTENING;
-              dist = sqrt(distSq);
-              force = G * mass[j] / (distSq * dist);
-              if (k == 0) {
-                a = a + dx * force;
-              } else {
-                a = a + dy * force;
-              }
+      ([0,0] <= [i,k] < [N, 2]) {
+        a = 0.0;
+        for (j = 0; j < N; j++) {
+          if (j != i) {
+            dx = pos[j,0] - pos[i,0];
+            dy = pos[j,1] - pos[i,1];
+            distSq = dx*dx + dy*dy + SOFTENING;
+            dist = sqrt(distSq);
+            force = G * mass[j] / (distSq * dist);
+            if (k == 0) {
+              a = a + dx * force;
+            } else {
+              a = a + dy * force;
             }
           }
-        } : a;
+        }
+      } : a;
     } : genarray([N, 2], 0.0);
 
     /* Update velocities and positions */
@@ -80,7 +79,7 @@ int main()
     } : genarray([N, 2], 0.0);
   }
 
-  printf("After %d steps:\n", STEPS);
+  printf("After %d steps:\n", NSTEPS);
   for (i = 0; i < N; i++) {
     printf("  Particle %d: (%7.3f, %7.3f) vel=(%7.3f, %7.3f)\n",
            i, pos[i,0], pos[i,1], vel[i,0], vel[i,1]);

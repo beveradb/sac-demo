@@ -61,14 +61,9 @@ int main()
   printf("Upper triangle { [i,j] -> j>=i ? A[i,j] : 0 }:\n");
   printMatrix(upper);
 
-  /* Row sums */
+  /* Row sums - use direct expression */
   rowsums = with {
-    ([0] <= [i] < [4]): {
-      s = 0;
-      for (j = 0; j < 4; j++) {
-        s = s + A[i,j];
-      }
-    } : s;
+    ([0] <= [i] < [4]): A[i,0] + A[i,1] + A[i,2] + A[i,3];
   } : genarray([4], 0);
   printf("Row sums { [i] -> sum(A[i]) }:\n");
   printVector(rowsums);

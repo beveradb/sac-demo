@@ -1,41 +1,33 @@
 /*
  * Parallel Benchmark - SAC
  * Mandelbrot computation for benchmarking sequential vs multi-threaded performance.
- * Outputs wall-clock time as "TIME_MS: <milliseconds>" for the companion server to parse.
+ * The companion server measures wall-clock execution time externally.
  */
 use Array: all;
 use StdIO: all;
 use Math: all;
-use Structures: all;
-use Clock: {clock, to_real};
 
 int main()
 {
   N = 512;
   max_iter = 200;
 
-  start = clock();
-
   /* Compute Mandelbrot iteration counts */
   result = with {
-    ([0,0] <= [i,j] < [N, N]):
-      {
-        cr = tod(j) / tod(N) * 3.5 - 2.5;
-        ci = tod(i) / tod(N) * 2.0 - 1.0;
-        zr = 0.0;
-        zi = 0.0;
-        iter = 0;
-        while (zr*zr + zi*zi <= 4.0 && iter < max_iter) {
-          tmp = zr*zr - zi*zi + cr;
-          zi = 2.0*zr*zi + ci;
-          zr = tmp;
-          iter = iter + 1;
-        }
-      } : iter;
+    ([0,0] <= [i,j] < [N, N]) {
+      cr = tod(j) / tod(N) * 3.5 - 2.5;
+      ci = tod(i) / tod(N) * 2.0 - 1.0;
+      zr = 0.0;
+      zi = 0.0;
+      iter = 0;
+      while (zr*zr + zi*zi <= 4.0 && iter < max_iter) {
+        tmp = zr*zr - zi*zi + cr;
+        zi = 2.0*zr*zi + ci;
+        zr = tmp;
+        iter = iter + 1;
+      }
+    } : iter;
   } : genarray([N, N], 0);
-
-  end = clock();
-  elapsed_ms = to_real(end - start) * 1000.0;
 
   /* Compute checksum to prevent dead code elimination */
   checksum = 0;
@@ -47,7 +39,6 @@ int main()
 
   printf("Mandelbrot %dx%d, max_iter=%d\n", N, N, max_iter);
   printf("Checksum: %d\n", checksum);
-  printf("TIME_MS: %.1f\n", elapsed_ms);
 
   return 0;
 }

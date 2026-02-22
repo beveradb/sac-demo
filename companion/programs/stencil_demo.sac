@@ -24,7 +24,7 @@ int main()
 
   N = 8;
 
-  /* Create sample image: gradient with some features */
+  /* Create sample image: gradient */
   image = with {
     ([0,0] <= [i,j] < [N,N]):
       tod(i * N + j);
@@ -41,15 +41,14 @@ int main()
 
   /* Apply convolution on interior pixels */
   blurred = with {
-    ([1,1] <= [i,j] < [N-1, N-1]):
-      {
-        s = 0.0;
-        for (di = 0; di < 3; di++) {
-          for (dj = 0; dj < 3; dj++) {
-            s = s + image[i+di-1, j+dj-1] * kernel[di,dj];
-          }
+    ([1,1] <= [i,j] < [N-1, N-1]) {
+      s = 0.0;
+      for (di = 0; di < 3; di++) {
+        for (dj = 0; dj < 3; dj++) {
+          s = s + image[i+di-1, j+dj-1] * kernel[di,dj];
         }
-      } : s;
+      }
+    } : s;
   } : genarray([N,N], 0.0);
 
   printf("After Gaussian blur (3x3):\n");
@@ -62,15 +61,14 @@ int main()
      -1.0, -1.0, -1.0]);
 
   edges = with {
-    ([1,1] <= [i,j] < [N-1, N-1]):
-      {
-        s = 0.0;
-        for (di = 0; di < 3; di++) {
-          for (dj = 0; dj < 3; dj++) {
-            s = s + image[i+di-1, j+dj-1] * edge_kernel[di,dj];
-          }
+    ([1,1] <= [i,j] < [N-1, N-1]) {
+      s = 0.0;
+      for (di = 0; di < 3; di++) {
+        for (dj = 0; dj < 3; dj++) {
+          s = s + image[i+di-1, j+dj-1] * edge_kernel[di,dj];
         }
-      } : fabs(s);
+      }
+    } : fabs(s);
   } : genarray([N,N], 0.0);
 
   printf("After edge detection (Laplacian):\n");

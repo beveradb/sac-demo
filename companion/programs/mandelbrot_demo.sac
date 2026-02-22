@@ -14,29 +14,25 @@ int main()
 
   /* Build the complex plane */
   img = with {
-    ([0,0] <= [i,j] < [N, M]):
-      {
-        cr = tod(j) / tod(M) * 3.5 - 2.5;
-        ci = tod(i) / tod(N) * 2.0 - 1.0;
-        zr = 0.0;
-        zi = 0.0;
-        iter = 0;
-        while (zr*zr + zi*zi <= 4.0 && iter < max_iter) {
-          tmp = zr*zr - zi*zi + cr;
-          zi = 2.0*zr*zi + ci;
-          zr = tmp;
-          iter = iter + 1;
-        }
-      } : iter;
+    ([0,0] <= [i,j] < [N, M]) {
+      cr = tod(j) / tod(M) * 3.5 - 2.5;
+      ci = tod(i) / tod(N) * 2.0 - 1.0;
+      zr = 0.0;
+      zi = 0.0;
+      iter = 0;
+      while (zr*zr + zi*zi <= 4.0 && iter < max_iter) {
+        tmp = zr*zr - zi*zi + cr;
+        zi = 2.0*zr*zi + ci;
+        zr = tmp;
+        iter = iter + 1;
+      }
+    } : iter;
   } : genarray([N, M], 0);
 
   /* ASCII output */
-  chars = " .:-=+*#%@";
   for (i = 0; i < N; i++) {
-    line = "";
     for (j = 0; j < M; j++) {
-      idx = (img[i,j] * (strlen(chars) - 1)) / max_iter;
-      /* Simple index to char mapping */
+      idx = (img[i,j] * 9) / max_iter;
       if (img[i,j] == max_iter) {
         printf("@");
       } else if (idx <= 1) {
