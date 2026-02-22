@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAC - Single-Assignment C | Interactive Demo</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a28;
+  --border: #2a2a3a;
+  --text: #e0e0e8;
+  --text-dim: #8888a0;
+  --accent: #6c5ce7;
+  --accent-glow: #7c6cf7;
+  --accent2: #00cec9;
+  --accent3: #fd79a8;
+  --accent4: #ffeaa7;
+  --code-bg: #0d0d15;
+  --success: #00b894;
+  --radius: 12px;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--bg);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+/* Navigation */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+nav .logo {
+  font-weight: 800;
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+
+nav .nav-links {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+}
+
+nav .nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+nav .nav-links a:hover { color: var(--accent2); }
+
+@media (max-width: 768px) {
+  nav .nav-links { display: none; }
+}
+
+/* Hero */
+#hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#mandelbrot-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.hero-overlay {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+
+.hero-overlay h1 {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-shadow: 0 0 60px rgba(108, 92, 231, 0.5);
+  margin-bottom: 0.5rem;
+}
+
+.hero-overlay .subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  color: var(--text-dim);
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+.hero-code {
+  pointer-events: auto;
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.8rem;
+  text-align: left;
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  max-width: 90vw;
+}
+
+.hero-code .kw { color: var(--accent); }
+.hero-code .fn { color: var(--accent2); }
+.hero-code .num { color: var(--accent4); }
+.hero-code .cmt { color: #555570; font-style: italic; }
+
+.hero-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Sections */
+section {
+  padding: 6rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+section h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--text), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+section .section-sub {
+  color: var(--text-dim);
+  margin-bottom: 3rem;
+  font-size: 1.05rem;
+}
+
+/* Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 30px rgba(108, 92, 231, 0.15);
+}
+
+.card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  color: var(--accent2);
+}
+
+.card p { color: var(--text-dim); font-size: 0.95rem; }
+
+.card .icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* Code block */
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  position: relative;
+}
+
+.code-block .label {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.8rem;
+  font-size: 0.65rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: sans-serif;
+}
+
+.kw { color: var(--accent); }
+.fn { color: var(--accent2); }
+.str { color: var(--success); }
+.num { color: var(--accent4); }
+.typ { color: var(--accent3); }
+.cmt { color: #555570; font-style: italic; }
+.op { color: var(--text); }
+
+/* Array operations section */
+.array-demo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .array-demo { grid-template-columns: 1fr; }
+}
+
+.array-grid-container {
+  position: relative;
+  min-height: 300px;
+}
+
+.array-grid {
+  display: inline-grid;
+  gap: 4px;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.array-cell {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.array-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.2);
+}
+
+.btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.dim-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.dim-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.dim-btn.active {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #000;
+  font-weight: 600;
+}
+
+/* Tensor comprehensions */
+.tensor-demo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .tensor-demo { grid-template-columns: 1fr; }
+}
+
+.tensor-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tensor-viz {
+  display: flex;
+  gap: 1.5rem;
+  align-items: start;
+  flex-wrap: wrap;
+}
+
+.tensor-matrix {
+  display: inline-grid;
+  gap: 3px;
+}
+
+.tensor-cell {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.tensor-arrow {
+  font-size: 2rem;
+  color: var(--accent);
+  align-self: center;
+}
+
+/* Stencil section */
+.stencil-demo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .stencil-demo { grid-template-columns: 1fr; }
+}
+
+.stencil-canvases {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stencil-canvases canvas {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  max-width: 100%;
+}
+
+.stencil-canvases .canvas-label {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 0.5rem;
+}
+
+.kernel-display {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  margin: 1rem 0;
+}
+
+.kernel-cell {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent4);
+}
+
+/* Parallelization */
+.parallel-demo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .parallel-demo { grid-template-columns: 1fr; }
+}
+
+.thread-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.thread-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.thread-bar .label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  min-width: 80px;
+}
+
+.thread-bar .bar-track {
+  flex: 1;
+  height: 28px;
+  background: var(--bg-card);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+}
+
+.thread-bar .bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.1s linear;
+  position: relative;
+}
+
+.thread-bar .bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+}
+
+.thread-bar .pct {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  min-width: 45px;
+  text-align: right;
+}
+
+.speedup-chart {
+  margin-top: 2rem;
+}
+
+.speedup-chart canvas {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  width: 100%;
+}
+
+.parallel-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* N-Body */
+.nbody-demo {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .nbody-demo { grid-template-columns: 1fr; }
+}
+
+#nbody-canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: #050508;
+  cursor: grab;
+}
+
+.nbody-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.nbody-stats {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 1rem;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+footer a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+
+/* Divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">SAC</div>
+  <ul class="nav-links">
+    <li><a href="#intro">About</a></li>
+    <li><a href="#arrays">Arrays</a></li>
+    <li><a href="#tensors">Tensors</a></li>
+    <li><a href="#stencil">Stencil</a></li>
+    <li><a href="#parallel">Parallel</a></li>
+    <li><a href="#nbody">N-Body</a></li>
+  </ul>
+</nav>
+
+<!-- Hero: Mandelbrot -->
+<section id="hero">
+  <canvas id="mandelbrot-canvas"></canvas>
+  <div class="hero-overlay">
+    <h1>SAC</h1>
+    <p class="subtitle">Single-Assignment C: Functional Array Programming for High-Performance Computing</p>
+    <div class="hero-code">
+      <span class="cmt">// Mandelbrot in SAC &mdash; the entire computation</span><br>
+      <span class="typ">complex</span>[.,.] <span class="fn">mandelbrot</span>(<span class="typ">int</span> N, <span class="typ">int</span> iters) {<br>
+      &nbsp;&nbsp;plane = { [i,j] -&gt; <span class="fn">toc</span>((<span class="typ">double</span>)j/N*<span class="num">3.0</span>-<span class="num">2.0</span>, (<span class="typ">double</span>)i/N*<span class="num">2.0</span>-<span class="num">1.0</span>) };<br>
+      &nbsp;&nbsp;z = <span class="fn">genarray</span>(<span class="fn">shape</span>(plane), <span class="fn">toc</span>(<span class="num">0.0</span>,<span class="num">0.0</span>));<br>
+      &nbsp;&nbsp;<span class="kw">for</span> (k=<span class="num">0</span>; k&lt;iters; k++) z = z*z + plane;<br>
+      &nbsp;&nbsp;<span class="kw">return</span> z;<br>
+      }
+    </div>
+  </div>
+  <div class="hero-hint">Click to pause &middot; Scroll to zoom &middot; Drag to pan</div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- What is SAC? -->
+<section id="intro">
+  <h2>What is SAC?</h2>
+  <p class="section-sub">
+    SAC (Single-Assignment C) is a <strong>functional array programming language</strong> with C-like syntax.
+    It compiles to highly optimized sequential, multi-threaded, and GPU code &mdash; automatically.
+  </p>
+  <div class="cards">
+    <div class="card fade-in delay-1">
+      <span class="icon">&#955;</span>
+      <h3>Functional + Arrays</h3>
+      <p>Immutable data combined with shape-polymorphic array operations. Write once, operate on arrays of any rank and shape.</p>
+    </div>
+    <div class="card fade-in delay-2">
+      <span class="icon">&#8801;</span>
+      <h3>C Syntax, No Pain</h3>
+      <p>Familiar C-like syntax means low learning curve. But underneath, the compiler does heavy lifting: fusion, tiling, vectorization.</p>
+    </div>
+    <div class="card fade-in delay-3">
+      <span class="icon">&#8644;</span>
+      <h3>Auto-Parallelization</h3>
+      <p>The same source code compiles to sequential, multi-threaded (pthreads), and CUDA targets. No annotations, no pragmas, no rewrites.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Interactive Array Operations -->
+<section id="arrays">
+  <h2>Interactive Array Operations</h2>
+  <p class="section-sub">Watch SAC's rank-polymorphic operations transform arrays in real time.</p>
+
+  <div class="dim-selector">
+    <button class="dim-btn active" data-dim="2">2D Matrix</button>
+    <button class="dim-btn" data-dim="1">1D Vector</button>
+    <button class="dim-btn" data-dim="3">3D Tensor</button>
+  </div>
+
+  <div class="array-demo">
+    <div>
+      <div class="array-controls">
+        <button class="btn" data-op="transpose">transpose</button>
+        <button class="btn" data-op="reverse">reverse</button>
+        <button class="btn" data-op="rotate">rotate [1]</button>
+        <button class="btn" data-op="take">take [3,3]</button>
+        <button class="btn" data-op="drop">drop [1,1]</button>
+        <button class="btn" data-op="reset">reset</button>
+      </div>
+      <div class="array-grid-container">
+        <div class="array-grid" id="array-grid"></div>
+      </div>
+    </div>
+    <div>
+      <div class="code-block" id="array-code">
+        <span class="label">SAC</span>
+        <span class="cmt">// Select an operation to see the SAC code</span><br>
+        <span class="typ">int</span>[*] result = <span class="fn">operation</span>(matrix);
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Tensor Comprehensions -->
+<section id="tensors">
+  <h2>Tensor Comprehensions</h2>
+  <p class="section-sub">SAC's with-loops are powerful tensor comprehensions that express complex array transformations concisely.</p>
+
+  <div class="tensor-presets">
+    <button class="btn active" data-preset="transpose">Transpose</button>
+    <button class="btn" data-preset="diagonal">Diagonal</button>
+    <button class="btn" data-preset="rowsum">Row Sums</button>
+    <button class="btn" data-preset="scale">Scale &times;2</button>
+    <button class="btn" data-preset="upper">Upper Triangle</button>
+  </div>
+
+  <div class="tensor-demo">
+    <div>
+      <div class="code-block" id="tensor-code">
+        <span class="label">SAC</span>
+      </div>
+      <div style="margin-top:1.5rem">
+        <div class="tensor-viz" id="tensor-viz"></div>
+      </div>
+    </div>
+    <div>
+      <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong style="color: var(--accent2);">With-loops</strong> are SAC's generalization of array comprehensions.
+        They describe the value at each index position, and the compiler automatically
+        parallelizes the computation.
+      </p>
+      <div class="code-block">
+        <span class="label">Syntax</span>
+        <span class="cmt">// General form:</span><br>
+        result = { [<span class="num">iv</span>] -&gt; <span class="fn">expr</span>(<span class="num">iv</span>) };<br><br>
+        <span class="cmt">// iv = index vector</span><br>
+        <span class="cmt">// The compiler infers shape from context</span><br>
+        <span class="cmt">// and parallelizes across all indices</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Stencil Convolution -->
+<section id="stencil">
+  <h2>Stencil Convolution</h2>
+  <p class="section-sub">Apply image filters using SAC's elegant stencil operations. The compiler optimizes boundary handling and memory access automatically.</p>
+
+  <div class="stencil-demo">
+    <div>
+      <div class="stencil-canvases">
+        <div>
+          <canvas id="stencil-src" width="280" height="280"></canvas>
+          <div class="canvas-label">Original</div>
+        </div>
+        <div>
+          <canvas id="stencil-dst" width="280" height="280"></canvas>
+          <div class="canvas-label" id="stencil-filter-label">Filtered</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button class="btn active" data-kernel="identity">Original</button>
+        <button class="btn" data-kernel="blur">Blur</button>
+        <button class="btn" data-kernel="sharpen">Sharpen</button>
+        <button class="btn" data-kernel="edge">Edge Detect</button>
+        <button class="btn" data-kernel="emboss">Emboss</button>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="kernel-display" id="kernel-display"></div>
+      </div>
+    </div>
+    <div>
+      <div class="code-block" id="stencil-code">
+        <span class="label">SAC</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Parallelization Demo -->
+<section id="parallel">
+  <h2>Parallelization Demo</h2>
+  <p class="section-sub">Same Mandelbrot code, different thread counts. SAC's compiler automatically distributes work across cores &mdash; no code changes needed.</p>
+
+  <div class="parallel-demo">
+    <div>
+      <div class="parallel-controls">
+        <button class="btn" id="parallel-start">Run Benchmark</button>
+        <button class="btn" id="parallel-reset">Reset</button>
+      </div>
+      <div class="thread-bars" id="thread-bars"></div>
+      <div class="speedup-chart">
+        <canvas id="speedup-canvas" width="500" height="220"></canvas>
+      </div>
+    </div>
+    <div>
+      <div class="code-block">
+        <span class="label">SAC</span>
+        <span class="cmt">// Exact same source code for all targets:</span><br><br>
+        <span class="cmt">// Sequential:</span><br>
+        $ sac2c -t <span class="str">seq</span> mandelbrot.sac<br><br>
+        <span class="cmt">// Multi-threaded (auto-parallel):</span><br>
+        $ sac2c -t <span class="str">mt_pth</span> mandelbrot.sac<br><br>
+        <span class="cmt">// CUDA GPU:</span><br>
+        $ sac2c -t <span class="str">cuda</span> mandelbrot.sac<br><br>
+        <span class="cmt">// The compiler handles decomposition,</span><br>
+        <span class="cmt">// synchronization, and data movement.</span>
+      </div>
+      <div style="margin-top: 1.5rem;">
+        <div class="code-block">
+          <span class="label">Result</span>
+          <span id="speedup-result" style="color: var(--accent2);">Click "Run Benchmark" to start</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- N-Body Simulation -->
+<section id="nbody">
+  <h2>N-Body Gravity Simulation</h2>
+  <p class="section-sub">200 particles interacting through gravity, expressed as a concise all-pairs computation in SAC.</p>
+
+  <div class="nbody-demo">
+    <div>
+      <canvas id="nbody-canvas" width="600" height="600"></canvas>
+      <div class="nbody-controls" style="margin-top:1rem">
+        <button class="btn" id="nbody-mode-seq">Sequential View</button>
+        <button class="btn active" id="nbody-mode-par">Parallel View</button>
+        <button class="btn" id="nbody-reset">Reset</button>
+      </div>
+      <div class="nbody-stats" id="nbody-stats">Particles: 200 | Mode: Parallel | FPS: --</div>
+    </div>
+    <div>
+      <div class="code-block">
+        <span class="label">SAC</span>
+        <span class="cmt">// All-pairs gravitational acceleration</span><br>
+        <span class="typ">double</span>[n,<span class="num">3</span>] <span class="fn">accelerations</span>(<span class="typ">double</span>[n,<span class="num">3</span>] pos, <span class="typ">double</span>[n] mass) {<br>
+        &nbsp;&nbsp;<span class="kw">return</span> { [i] -&gt; <span class="fn">sum</span>({<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;[j] -&gt; i != j<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;? mass[j] * (pos[j]-pos[i])<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ <span class="fn">pow</span>(<span class="fn">norm</span>(pos[j]-pos[i]),<span class="num">3</span>)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="fn">genarray</span>([<span class="num">3</span>], <span class="num">0.0</span>)<br>
+        &nbsp;&nbsp;}) };<br>
+        }
+      </div>
+      <div style="margin-top:1.5rem">
+        <p style="color: var(--text-dim); font-size: 0.9rem;">
+          <strong style="color:var(--accent2)">Sequential view:</strong> highlights particles one-by-one as their forces are computed serially.<br><br>
+          <strong style="color:var(--accent)">Parallel view:</strong> all forces computed simultaneously &mdash; this is what SAC's compiler achieves automatically.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>
+    SAC &mdash; Single-Assignment C &middot;
+    <a href="https://www.sac-home.org" target="_blank">sac-home.org</a> &middot;
+    Interactive demo showcasing functional array programming
+  </p>
+</footer>
+
+<script>
+// ============================================================
+// MANDELBROT HERO
+// ============================================================
+(function() {
+  const canvas = document.getElementById('mandelbrot-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  let paused = false;
+  let time = 0;
+  let centerX = -0.7436447860, centerY = 0.1318252536;
+  let zoom = 0.8;
+  let targetZoom = 0.8;
+  let panX = 0, panY = 0;
+  let dragging = false, dragStartX, dragStartY, dragPanX, dragPanY;
+  const maxIter = 120;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth;
+    H = canvas.clientHeight;
+    canvas.width = Math.floor(W * dpr / 2);
+    canvas.height = Math.floor(H * dpr / 2);
+  }
+
+  function hslToRgb(h, s, l) {
+    h /= 360; s /= 100; l /= 100;
+    let r, g, b;
+    if (s === 0) { r = g = b = l; }
+    else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1; if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+
+  function render() {
+    const w = canvas.width, h = canvas.height;
+    const img = ctx.createImageData(w, h);
+    const data = img.data;
+    const aspect = w / h;
+    const scale = 3.0 / zoom;
+    const cx = centerX + panX / zoom;
+    const cy = centerY + panY / zoom;
+
+    for (let py = 0; py < h; py++) {
+      for (let px = 0; px < w; px++) {
+        const x0 = (px / w - 0.5) * scale * aspect + cx;
+        const y0 = (py / h - 0.5) * scale + cy;
+        let x = 0, y = 0, iter = 0;
+        while (x*x + y*y <= 4 && iter < maxIter) {
+          const xt = x*x - y*y + x0;
+          y = 2*x*y + y0;
+          x = xt;
+          iter++;
+        }
+        const idx = (py * w + px) * 4;
+        if (iter === maxIter) {
+          data[idx] = data[idx+1] = data[idx+2] = 0;
+        } else {
+          const smooth = iter + 1 - Math.log2(Math.log2(x*x + y*y));
+          const hue = (smooth * 8 + time * 40) % 360;
+          const [r, g, b] = hslToRgb(hue, 85, 50 + Math.sin(smooth * 0.3) * 15);
+          data[idx] = r; data[idx+1] = g; data[idx+2] = b;
+        }
+        data[idx+3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function animate() {
+    if (!paused) {
+      time += 0.005;
+      zoom += (targetZoom - zoom) * 0.02;
+      targetZoom *= 1.001;
+    }
+    render();
+    requestAnimationFrame(animate);
+  }
+
+  canvas.addEventListener('click', (e) => {
+    if (!dragging) paused = !paused;
+  });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.85 : 1.18;
+    targetZoom *= factor;
+    zoom *= factor;
+  }, { passive: false });
+
+  canvas.addEventListener('mousedown', (e) => {
+    dragging = false;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragPanX = panX;
+    dragPanY = panY;
+    canvas.style.cursor = 'grabbing';
+
+    const onMove = (e) => {
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      if (Math.abs(dx) + Math.abs(dy) > 5) dragging = true;
+      panX = dragPanX - dx * 0.002 / zoom * 3;
+      panY = dragPanY - dy * 0.002 / zoom * 3;
+    };
+    const onUp = () => {
+      canvas.style.cursor = 'crosshair';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      setTimeout(() => { dragging = false; }, 50);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  });
+
+  window.addEventListener('resize', () => { resize(); });
+  resize();
+  animate();
+})();
+
+// ============================================================
+// INTERSECTION OBSERVER for fade-in
+// ============================================================
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('fade-in');
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+// ============================================================
+// ARRAY OPERATIONS
+// ============================================================
+(function() {
+  const grid = document.getElementById('array-grid');
+  const codeEl = document.getElementById('array-code');
+  let currentDim = 2;
+  let matrix;
+
+  const colors = [
+    '#6c5ce7','#00cec9','#fd79a8','#ffeaa7','#00b894','#e17055',
+    '#74b9ff','#a29bfe','#55efc4','#fab1a0','#81ecec','#dfe6e9',
+    '#ff7675','#fdcb6e','#636e72','#b2bec3'
+  ];
+
+  function makeMatrix(dim) {
+    if (dim === 1) return { shape: [8], data: [1,2,3,4,5,6,7,8] };
+    if (dim === 2) return { shape: [4,4], data: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] };
+    return { shape: [2,3,3], data: Array.from({length:18}, (_,i) => i+1) };
+  }
+
+  function renderGrid(m) {
+    grid.innerHTML = '';
+    const [rows, cols] = m.shape.length === 1 ? [1, m.shape[0]]
+      : m.shape.length === 2 ? m.shape
+      : [m.shape[0] * m.shape[1], m.shape[2]];
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, 52px)`;
+    m.data.forEach((v, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'array-cell';
+      cell.textContent = v;
+      cell.style.background = colors[(v - 1) % colors.length] + '30';
+      cell.style.border = `2px solid ${colors[(v - 1) % colors.length]}60`;
+      cell.style.color = colors[(v - 1) % colors.length];
+      cell.style.animationDelay = `${i * 20}ms`;
+      cell.style.opacity = '0';
+      cell.style.animation = 'fadeInUp 0.3s ease forwards';
+      cell.style.animationDelay = `${i * 25}ms`;
+      grid.appendChild(cell);
+    });
+  }
+
+  function transpose(m) {
+    if (m.shape.length === 1) return { shape: [...m.shape], data: [...m.data].reverse() };
+    const [r, c] = m.shape;
+    const d = [];
+    for (let j = 0; j < c; j++) for (let i = 0; i < r; i++) d.push(m.data[i * c + j]);
+    return { shape: [c, r], data: d };
+  }
+
+  function reverse(m) {
+    if (m.shape.length === 1) return { shape: [...m.shape], data: [...m.data].reverse() };
+    const [r, c] = m.shape;
+    const d = [];
+    for (let i = r - 1; i >= 0; i--) for (let j = 0; j < c; j++) d.push(m.data[i * c + j]);
+    return { shape: [r, c], data: d };
+  }
+
+  function rotate(m) {
+    if (m.shape.length === 1) {
+      const d = [...m.data];
+      d.push(d.shift());
+      return { shape: [...m.shape], data: d };
+    }
+    const [r, c] = m.shape;
+    const d = [];
+    for (let i = 0; i < r; i++) {
+      const row = m.data.slice(i * c, (i + 1) * c);
+      row.push(row.shift());
+      d.push(...row);
+    }
+    return { shape: [r, c], data: d };
+  }
+
+  function take(m) {
+    if (m.shape.length === 1) return { shape: [3], data: m.data.slice(0, 3) };
+    const [r, c] = m.shape;
+    const tr = Math.min(3, r), tc = Math.min(3, c);
+    const d = [];
+    for (let i = 0; i < tr; i++) for (let j = 0; j < tc; j++) d.push(m.data[i * c + j]);
+    return { shape: [tr, tc], data: d };
+  }
+
+  function drop(m) {
+    if (m.shape.length === 1) return { shape: [m.shape[0] - 1], data: m.data.slice(1) };
+    const [r, c] = m.shape;
+    const d = [];
+    for (let i = 1; i < r; i++) for (let j = 1; j < c; j++) d.push(m.data[i * c + j]);
+    return { shape: [r - 1, c - 1], data: d };
+  }
+
+  const sacCode = {
+    transpose: `<span class="cmt">// Transpose: swap axes</span>\n<span class="typ">int</span>[.,.] result = <span class="fn">transpose</span>(matrix);\n\n<span class="cmt">// Equivalent with-loop:</span>\nresult = { [i,j] -> matrix[j,i] };`,
+    reverse: `<span class="cmt">// Reverse along first axis</span>\n<span class="typ">int</span>[.,.] result = <span class="fn">reverse</span>(matrix);`,
+    rotate: `<span class="cmt">// Rotate along axis 1 by 1 position</span>\n<span class="typ">int</span>[.,.] result = <span class="fn">rotate</span>([<span class="num">1</span>], matrix);`,
+    take: `<span class="cmt">// Take first 3 elements along each axis</span>\n<span class="typ">int</span>[.,.] result = <span class="fn">take</span>([<span class="num">3</span>,<span class="num">3</span>], matrix);`,
+    drop: `<span class="cmt">// Drop first element along each axis</span>\n<span class="typ">int</span>[.,.] result = <span class="fn">drop</span>([<span class="num">1</span>,<span class="num">1</span>], matrix);`,
+    reset: `<span class="cmt">// Original matrix</span>\n<span class="typ">int</span>[<span class="num">4</span>,<span class="num">4</span>] matrix = <span class="fn">reshape</span>([<span class="num">4</span>,<span class="num">4</span>], <span class="fn">iota</span>(<span class="num">16</span>)+<span class="num">1</span>);`
+  };
+
+  const ops = { transpose, reverse, rotate, take, drop };
+
+  matrix = makeMatrix(2);
+  renderGrid(matrix);
+
+  document.querySelectorAll('.array-controls .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const op = btn.dataset.op;
+      if (op === 'reset') {
+        matrix = makeMatrix(currentDim);
+      } else if (ops[op]) {
+        if (currentDim === 3) {
+          const flat2d = { shape: [matrix.shape[0] * matrix.shape[1], matrix.shape[2]], data: [...matrix.data] };
+          const result = ops[op](flat2d);
+          matrix = { shape: [matrix.shape[0], ...result.shape.length === 1 ? [result.shape[0]] : result.shape], data: result.data };
+          matrix.shape = result.shape;
+        } else {
+          matrix = ops[op](matrix);
+        }
+      }
+      renderGrid(matrix);
+      codeEl.innerHTML = `<span class="label">SAC</span>\n` + (sacCode[op] || sacCode.reset);
+    });
+  });
+
+  document.querySelectorAll('.dim-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.dim-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDim = parseInt(btn.dataset.dim);
+      matrix = makeMatrix(currentDim);
+      renderGrid(matrix);
+      codeEl.innerHTML = `<span class="label">SAC</span>\n<span class="cmt">// ${currentDim}D array - same operations apply!</span>\n<span class="typ">int</span>[${'.'.repeat(currentDim).split('').join(',')}] arr = ...;`;
+    });
+  });
+})();
+
+// ============================================================
+// TENSOR COMPREHENSIONS
+// ============================================================
+(function() {
+  const codeEl = document.getElementById('tensor-code');
+  const vizEl = document.getElementById('tensor-viz');
+  const src = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]];
+
+  const presets = {
+    transpose: {
+      code: `<span class="cmt">// Transpose via tensor comprehension</span>\nresult = { [i,j] -> A[j,i] };`,
+      fn: (m) => m[0].map((_, j) => m.map(row => row[j]))
+    },
+    diagonal: {
+      code: `<span class="cmt">// Extract diagonal</span>\ndiag = { [i] -> A[i,i] };`,
+      fn: (m) => [m.map((row, i) => row[i])]
+    },
+    rowsum: {
+      code: `<span class="cmt">// Sum each row</span>\nsums = { [i] -> <span class="fn">sum</span>(A[i]) };`,
+      fn: (m) => [m.map(row => row.reduce((a, b) => a + b, 0))]
+    },
+    scale: {
+      code: `<span class="cmt">// Element-wise scale by 2</span>\nresult = { [i,j] -> <span class="num">2</span> * A[i,j] };`,
+      fn: (m) => m.map(row => row.map(v => v * 2))
+    },
+    upper: {
+      code: `<span class="cmt">// Upper triangular</span>\nresult = { [i,j] -> j >= i ? A[i,j] : <span class="num">0</span> };`,
+      fn: (m) => m.map((row, i) => row.map((v, j) => j >= i ? v : 0))
+    }
+  };
+
+  function renderMatrix(m, container, highlight) {
+    const el = document.createElement('div');
+    el.className = 'tensor-matrix';
+    const cols = m[0] ? m[0].length || 1 : 1;
+    el.style.gridTemplateColumns = `repeat(${cols}, 44px)`;
+    const flat = m.flat();
+    flat.forEach((v, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'tensor-cell';
+      cell.textContent = v;
+      const intensity = Math.min(1, Math.abs(v) / 20);
+      if (v === 0 && highlight) {
+        cell.style.background = '#1a1a28';
+        cell.style.color = '#555570';
+      } else {
+        cell.style.background = highlight
+          ? `rgba(108, 92, 231, ${0.15 + intensity * 0.3})`
+          : `rgba(0, 206, 201, ${0.15 + intensity * 0.3})`;
+        cell.style.color = highlight ? '#a29bfe' : '#00cec9';
+      }
+      cell.style.border = `1px solid ${highlight ? 'rgba(108,92,231,0.3)' : 'rgba(0,206,201,0.3)'}`;
+      el.appendChild(cell);
+    });
+    container.appendChild(el);
+  }
+
+  function showPreset(name) {
+    const p = presets[name];
+    codeEl.innerHTML = `<span class="label">SAC</span>\n` + p.code;
+    vizEl.innerHTML = '';
+    const srcLabel = document.createElement('div');
+    srcLabel.style.textAlign = 'center';
+    const srcTitle = document.createElement('div');
+    srcTitle.textContent = 'Input A';
+    srcTitle.style.cssText = 'font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;';
+    srcLabel.appendChild(srcTitle);
+    renderMatrix(src, srcLabel, false);
+    vizEl.appendChild(srcLabel);
+
+    const arrow = document.createElement('div');
+    arrow.className = 'tensor-arrow';
+    arrow.innerHTML = '&#8594;';
+    vizEl.appendChild(arrow);
+
+    const dstLabel = document.createElement('div');
+    dstLabel.style.textAlign = 'center';
+    const dstTitle = document.createElement('div');
+    dstTitle.textContent = 'Result';
+    dstTitle.style.cssText = 'font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;';
+    dstLabel.appendChild(dstTitle);
+    renderMatrix(p.fn(src), dstLabel, true);
+    vizEl.appendChild(dstLabel);
+  }
+
+  document.querySelectorAll('.tensor-presets .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tensor-presets .btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showPreset(btn.dataset.preset);
+    });
+  });
+
+  showPreset('transpose');
+})();
+
+// ============================================================
+// STENCIL CONVOLUTION
+// ============================================================
+(function() {
+  const srcCanvas = document.getElementById('stencil-src');
+  const dstCanvas = document.getElementById('stencil-dst');
+  const srcCtx = srcCanvas.getContext('2d');
+  const dstCtx = dstCanvas.getContext('2d');
+  const kernelDisplay = document.getElementById('kernel-display');
+  const codeEl = document.getElementById('stencil-code');
+  const filterLabel = document.getElementById('stencil-filter-label');
+  const W = 280, H = 280;
+
+  // Generate a sample image: colorful gradient circles
+  function generateSampleImage() {
+    const img = srcCtx.createImageData(W, H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const idx = (y * W + x) * 4;
+        const cx1 = W * 0.3, cy1 = H * 0.3;
+        const cx2 = W * 0.7, cy2 = H * 0.6;
+        const d1 = Math.sqrt((x-cx1)**2 + (y-cy1)**2);
+        const d2 = Math.sqrt((x-cx2)**2 + (y-cy2)**2);
+
+        const r = Math.floor(128 + 127 * Math.sin(d1 * 0.05));
+        const g = Math.floor(128 + 127 * Math.sin(d2 * 0.06 + 2));
+        const b = Math.floor(128 + 127 * Math.sin((d1 + d2) * 0.03 + 4));
+
+        // Add some geometric shapes
+        const inCircle1 = d1 < 60;
+        const inCircle2 = d2 < 50;
+        const inRect = x > 100 && x < 200 && y > 120 && y < 180;
+        const checker = ((Math.floor(x/20) + Math.floor(y/20)) % 2 === 0);
+
+        if (inCircle1) {
+          img.data[idx] = 220; img.data[idx+1] = 80; img.data[idx+2] = 160;
+        } else if (inCircle2) {
+          img.data[idx] = 80; img.data[idx+1] = 200; img.data[idx+2] = 220;
+        } else if (inRect) {
+          img.data[idx] = 255; img.data[idx+1] = 220; img.data[idx+2] = 100;
+        } else if (checker && y > H * 0.7) {
+          img.data[idx] = r * 0.5; img.data[idx+1] = g * 0.5; img.data[idx+2] = b * 0.5;
+        } else {
+          img.data[idx] = r; img.data[idx+1] = g; img.data[idx+2] = b;
+        }
+        img.data[idx+3] = 255;
+      }
+    }
+    srcCtx.putImageData(img, 0, 0);
+    return img;
+  }
+
+  const srcImg = generateSampleImage();
+
+  const kernels = {
+    identity: { name: 'Identity', k: [[0,0,0],[0,1,0],[0,0,0]], div: 1 },
+    blur: { name: 'Gaussian Blur', k: [[1,2,1],[2,4,2],[1,2,1]], div: 16 },
+    sharpen: { name: 'Sharpen', k: [[0,-1,0],[-1,5,-1],[0,-1,0]], div: 1 },
+    edge: { name: 'Edge Detect', k: [[-1,-1,-1],[-1,8,-1],[-1,-1,-1]], div: 1 },
+    emboss: { name: 'Emboss', k: [[-2,-1,0],[-1,1,1],[0,1,2]], div: 1 }
+  };
+
+  const sacCodeMap = {
+    identity: `<span class="cmt">// Identity (no-op)</span>\nresult = image;`,
+    blur: `<span class="cmt">// Gaussian blur stencil</span>\n<span class="typ">double</span>[.,.] kernel = \n  <span class="fn">reshape</span>([<span class="num">3</span>,<span class="num">3</span>],\n    [<span class="num">1</span>,<span class="num">2</span>,<span class="num">1</span>, <span class="num">2</span>,<span class="num">4</span>,<span class="num">2</span>, <span class="num">1</span>,<span class="num">2</span>,<span class="num">1</span>]) / <span class="num">16.0</span>;\n\nresult = { [i,j] ->\n  <span class="fn">sum</span>({ [di,dj] ->\n    image[i+di<span class="num">-1</span>, j+dj<span class="num">-1</span>] * kernel[di,dj]\n  | [di,dj] < [<span class="num">3</span>,<span class="num">3</span>] })\n};`,
+    sharpen: `<span class="cmt">// Sharpen stencil</span>\n<span class="typ">double</span>[.,.] kernel =\n  <span class="fn">reshape</span>([<span class="num">3</span>,<span class="num">3</span>],\n    [<span class="num">0</span>,<span class="num">-1</span>,<span class="num">0</span>, <span class="num">-1</span>,<span class="num">5</span>,<span class="num">-1</span>, <span class="num">0</span>,<span class="num">-1</span>,<span class="num">0</span>]);\n\nresult = { [i,j] ->\n  <span class="fn">sum</span>({ [di,dj] ->\n    image[i+di<span class="num">-1</span>, j+dj<span class="num">-1</span>] * kernel[di,dj]\n  | [di,dj] < [<span class="num">3</span>,<span class="num">3</span>] })\n};`,
+    edge: `<span class="cmt">// Laplacian edge detection</span>\n<span class="typ">double</span>[.,.] kernel =\n  <span class="fn">reshape</span>([<span class="num">3</span>,<span class="num">3</span>],\n    [<span class="num">-1</span>,<span class="num">-1</span>,<span class="num">-1</span>, <span class="num">-1</span>,<span class="num">8</span>,<span class="num">-1</span>, <span class="num">-1</span>,<span class="num">-1</span>,<span class="num">-1</span>]);\n\nresult = { [i,j] ->\n  <span class="fn">sum</span>({ [di,dj] ->\n    image[i+di<span class="num">-1</span>, j+dj<span class="num">-1</span>] * kernel[di,dj]\n  | [di,dj] < [<span class="num">3</span>,<span class="num">3</span>] })\n};`,
+    emboss: `<span class="cmt">// Emboss stencil</span>\n<span class="typ">double</span>[.,.] kernel =\n  <span class="fn">reshape</span>([<span class="num">3</span>,<span class="num">3</span>],\n    [<span class="num">-2</span>,<span class="num">-1</span>,<span class="num">0</span>, <span class="num">-1</span>,<span class="num">1</span>,<span class="num">1</span>, <span class="num">0</span>,<span class="num">1</span>,<span class="num">2</span>]);\n\nresult = { [i,j] ->\n  <span class="fn">sum</span>({ [di,dj] ->\n    image[i+di<span class="num">-1</span>, j+dj<span class="num">-1</span>] * kernel[di,dj]\n  | [di,dj] < [<span class="num">3</span>,<span class="num">3</span>] })\n};`
+  };
+
+  function applyKernel(kernelName) {
+    const k = kernels[kernelName];
+    const src = srcImg.data;
+    const dst = dstCtx.createImageData(W, H);
+    const d = dst.data;
+
+    if (kernelName === 'identity') {
+      for (let i = 0; i < src.length; i++) d[i] = src[i];
+    } else {
+      for (let y = 1; y < H - 1; y++) {
+        for (let x = 1; x < W - 1; x++) {
+          for (let c = 0; c < 3; c++) {
+            let sum = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                sum += src[((y+dy)*W + (x+dx))*4 + c] * k.k[dy+1][dx+1];
+              }
+            }
+            d[(y*W+x)*4+c] = Math.max(0, Math.min(255, Math.round(sum / k.div)));
+          }
+          d[(y*W+x)*4+3] = 255;
+        }
+      }
+    }
+    dstCtx.putImageData(dst, 0, 0);
+
+    // Show kernel
+    kernelDisplay.innerHTML = '';
+    k.k.flat().forEach(v => {
+      const cell = document.createElement('div');
+      cell.className = 'kernel-cell';
+      cell.textContent = v;
+      if (v > 0) cell.style.color = 'var(--accent2)';
+      else if (v < 0) cell.style.color = 'var(--accent3)';
+      else cell.style.color = 'var(--text-dim)';
+      kernelDisplay.appendChild(cell);
+    });
+
+    codeEl.innerHTML = `<span class="label">SAC</span>\n` + sacCodeMap[kernelName];
+    filterLabel.textContent = k.name;
+  }
+
+  document.querySelectorAll('[data-kernel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-kernel]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyKernel(btn.dataset.kernel);
+    });
+  });
+
+  applyKernel('identity');
+})();
+
+// ============================================================
+// PARALLELIZATION DEMO
+// ============================================================
+(function() {
+  const threadBarsEl = document.getElementById('thread-bars');
+  const speedupCanvas = document.getElementById('speedup-canvas');
+  const speedupCtx = speedupCanvas.getContext('2d');
+  const resultEl = document.getElementById('speedup-result');
+  const threadCounts = [1, 2, 4, 8];
+  const barColors = ['#6c5ce7', '#00cec9', '#fd79a8', '#ffeaa7'];
+  let running = false;
+  let progress = {};
+  let times = {};
+  let animId = null;
+
+  // Initialize bars
+  function initBars() {
+    threadBarsEl.innerHTML = '';
+    threadCounts.forEach((tc, idx) => {
+      const bar = document.createElement('div');
+      bar.className = 'thread-bar';
+      bar.innerHTML = `
+        <span class="label">${tc} thread${tc > 1 ? 's' : ''}</span>
+        <div class="bar-track"><div class="bar-fill" id="bar-${tc}" style="width:0%; background:${barColors[idx]}"></div></div>
+        <span class="pct" id="pct-${tc}">0%</span>
+      `;
+      threadBarsEl.appendChild(bar);
+      progress[tc] = 0;
+      times[tc] = 0;
+    });
+  }
+
+  function drawSpeedupChart() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = speedupCanvas.clientWidth;
+    const h = 220;
+    speedupCanvas.width = w * dpr;
+    speedupCanvas.height = h * dpr;
+    speedupCanvas.style.width = w + 'px';
+    speedupCanvas.style.height = h + 'px';
+    speedupCtx.scale(dpr, dpr);
+
+    speedupCtx.fillStyle = '#0d0d15';
+    speedupCtx.fillRect(0, 0, w, h);
+    speedupCtx.strokeStyle = '#2a2a3a';
+    speedupCtx.lineWidth = 1;
+
+    const pad = { l: 50, r: 20, t: 20, b: 40 };
+    const cw = w - pad.l - pad.r;
+    const ch = h - pad.t - pad.b;
+
+    // Grid
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.t + (ch / 4) * i;
+      speedupCtx.beginPath();
+      speedupCtx.moveTo(pad.l, y);
+      speedupCtx.lineTo(w - pad.r, y);
+      speedupCtx.stroke();
+      speedupCtx.fillStyle = '#8888a0';
+      speedupCtx.font = '11px sans-serif';
+      speedupCtx.textAlign = 'right';
+      speedupCtx.fillText((8 - i * 2) + 'x', pad.l - 8, y + 4);
+    }
+
+    // Ideal line
+    speedupCtx.strokeStyle = 'rgba(255,255,255,0.15)';
+    speedupCtx.setLineDash([4, 4]);
+    speedupCtx.beginPath();
+    threadCounts.forEach((tc, idx) => {
+      const x = pad.l + (idx / (threadCounts.length - 1)) * cw;
+      const y = pad.t + ch - (tc / 8) * ch;
+      idx === 0 ? speedupCtx.moveTo(x, y) : speedupCtx.lineTo(x, y);
+    });
+    speedupCtx.stroke();
+    speedupCtx.setLineDash([]);
+
+    // Labels
+    speedupCtx.fillStyle = '#555570';
+    speedupCtx.font = '10px sans-serif';
+    speedupCtx.textAlign = 'right';
+    speedupCtx.fillText('ideal', w - pad.r + 5, pad.t + ch - (8/8)*ch + 4);
+
+    // Data
+    const baseTime = times[1] || 1;
+    speedupCtx.strokeStyle = '#6c5ce7';
+    speedupCtx.lineWidth = 2;
+    speedupCtx.beginPath();
+    threadCounts.forEach((tc, idx) => {
+      const x = pad.l + (idx / (threadCounts.length - 1)) * cw;
+      const speedup = times[tc] > 0 ? baseTime / times[tc] : 0;
+      const y = pad.t + ch - (speedup / 8) * ch;
+      idx === 0 ? speedupCtx.moveTo(x, y) : speedupCtx.lineTo(x, y);
+    });
+    speedupCtx.stroke();
+
+    // Dots + labels
+    threadCounts.forEach((tc, idx) => {
+      const x = pad.l + (idx / (threadCounts.length - 1)) * cw;
+      const speedup = times[tc] > 0 ? baseTime / times[tc] : 0;
+      const y = pad.t + ch - (speedup / 8) * ch;
+
+      speedupCtx.fillStyle = barColors[idx];
+      speedupCtx.beginPath();
+      speedupCtx.arc(x, y, 5, 0, Math.PI * 2);
+      speedupCtx.fill();
+
+      speedupCtx.fillStyle = '#e0e0e8';
+      speedupCtx.font = '11px monospace';
+      speedupCtx.textAlign = 'center';
+      speedupCtx.fillText(tc + 't', x, h - pad.b + 18);
+      if (speedup > 0) {
+        speedupCtx.fillText(speedup.toFixed(1) + 'x', x, y - 12);
+      }
+    });
+  }
+
+  // Mandelbrot computation for benchmarking
+  function computeMandelbrotChunk(startRow, endRow, cols, rows) {
+    let count = 0;
+    for (let py = startRow; py < endRow; py++) {
+      for (let px = 0; px < cols; px++) {
+        const x0 = (px / cols) * 3.5 - 2.5;
+        const y0 = (py / rows) * 2.0 - 1.0;
+        let x = 0, y = 0, iter = 0;
+        while (x*x + y*y <= 4 && iter < 100) {
+          const xt = x*x - y*y + x0;
+          y = 2*x*y + y0;
+          x = xt;
+          iter++;
+        }
+        count += iter;
+      }
+    }
+    return count;
+  }
+
+  async function runBenchmark() {
+    if (running) return;
+    running = true;
+    resultEl.textContent = 'Running benchmark...';
+    initBars();
+
+    const ROWS = 300, COLS = 400;
+
+    for (const tc of threadCounts) {
+      const chunkSize = Math.ceil(ROWS / tc);
+      const startTime = performance.now();
+      let completed = 0;
+
+      const promises = [];
+      for (let t = 0; t < tc; t++) {
+        const startRow = t * chunkSize;
+        const endRow = Math.min(startRow + chunkSize, ROWS);
+        promises.push(new Promise(resolve => {
+          // Simulate threaded execution with staggered timeouts
+          const subChunks = 20;
+          const rowsPerSub = Math.ceil((endRow - startRow) / subChunks);
+          let sub = 0;
+          function doChunk() {
+            if (sub >= subChunks) { resolve(); return; }
+            const sr = startRow + sub * rowsPerSub;
+            const er = Math.min(sr + rowsPerSub, endRow);
+            computeMandelbrotChunk(sr, er, COLS, ROWS);
+            completed++;
+            progress[tc] = Math.min(100, Math.round(completed / (tc * subChunks) * 100));
+            document.getElementById(`bar-${tc}`).style.width = progress[tc] + '%';
+            document.getElementById(`pct-${tc}`).textContent = progress[tc] + '%';
+            sub++;
+            setTimeout(doChunk, 0);
+          }
+          doChunk();
+        }));
+      }
+
+      await Promise.all(promises);
+      times[tc] = performance.now() - startTime;
+      progress[tc] = 100;
+      document.getElementById(`bar-${tc}`).style.width = '100%';
+      document.getElementById(`pct-${tc}`).textContent = '100%';
+      drawSpeedupChart();
+    }
+
+    const speedup = times[1] / times[8];
+    resultEl.innerHTML = `Completed! 8-thread speedup: <strong>${speedup.toFixed(1)}x</strong> (${times[1].toFixed(0)}ms &rarr; ${times[8].toFixed(0)}ms)`;
+    running = false;
+  }
+
+  document.getElementById('parallel-start').addEventListener('click', runBenchmark);
+  document.getElementById('parallel-reset').addEventListener('click', () => {
+    running = false;
+    initBars();
+    times = {};
+    drawSpeedupChart();
+    resultEl.textContent = 'Click "Run Benchmark" to start';
+  });
+
+  initBars();
+  drawSpeedupChart();
+  window.addEventListener('resize', drawSpeedupChart);
+})();
+
+// ============================================================
+// N-BODY SIMULATION
+// ============================================================
+(function() {
+  const canvas = document.getElementById('nbody-canvas');
+  const ctx = canvas.getContext('2d');
+  const statsEl = document.getElementById('nbody-stats');
+  const N = 200;
+  const G = 0.5;
+  const DT = 0.016;
+  const SOFTENING = 4.0;
+  let mode = 'parallel'; // 'sequential' or 'parallel'
+  let seqHighlight = 0;
+  let particles = [];
+  let frameCount = 0;
+  let lastFpsTime = performance.now();
+  let fps = 0;
+
+  function initParticles() {
+    particles = [];
+    for (let i = 0; i < N; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 80 + Math.random() * 120;
+      const x = 300 + Math.cos(angle) * r + (Math.random() - 0.5) * 40;
+      const y = 300 + Math.sin(angle) * r + (Math.random() - 0.5) * 40;
+      const speed = 0.8 + Math.random() * 0.5;
+      particles.push({
+        x, y,
+        vx: -Math.sin(angle) * speed + (Math.random() - 0.5) * 0.3,
+        vy: Math.cos(angle) * speed + (Math.random() - 0.5) * 0.3,
+        mass: 0.5 + Math.random() * 2.5,
+        hue: (angle / (Math.PI * 2) * 360 + Math.random() * 30) % 360
+      });
+    }
+  }
+
+  function step() {
+    const ax = new Float64Array(N);
+    const ay = new Float64Array(N);
+
+    // All-pairs acceleration
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        if (i === j) continue;
+        const dx = particles[j].x - particles[i].x;
+        const dy = particles[j].y - particles[i].y;
+        const distSq = dx*dx + dy*dy + SOFTENING;
+        const dist = Math.sqrt(distSq);
+        const force = G * particles[j].mass / (distSq * dist);
+        ax[i] += dx * force;
+        ay[i] += dy * force;
+      }
+    }
+
+    // Integrate
+    for (let i = 0; i < N; i++) {
+      particles[i].vx += ax[i] * DT;
+      particles[i].vy += ay[i] * DT;
+      // Damping to prevent explosion
+      particles[i].vx *= 0.999;
+      particles[i].vy *= 0.999;
+      particles[i].x += particles[i].vx;
+      particles[i].y += particles[i].vy;
+
+      // Soft boundary
+      const cx = 300, cy = 300, maxR = 280;
+      const dx = particles[i].x - cx, dy = particles[i].y - cy;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d > maxR) {
+        particles[i].x = cx + dx / d * maxR;
+        particles[i].y = cy + dy / d * maxR;
+        particles[i].vx *= -0.5;
+        particles[i].vy *= -0.5;
+      }
+    }
+  }
+
+  function render() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+    }
+
+    const scaleX = w / 600;
+    const scaleY = h / 600;
+
+    ctx.fillStyle = 'rgba(5, 5, 8, 0.3)';
+    ctx.fillRect(0, 0, w, h);
+
+    step();
+
+    if (mode === 'sequential') {
+      seqHighlight = (seqHighlight + 1) % N;
+    }
+
+    for (let i = 0; i < N; i++) {
+      const p = particles[i];
+      const px = p.x * scaleX;
+      const py = p.y * scaleY;
+      const radius = (1 + p.mass * 0.8) * Math.min(scaleX, scaleY);
+      let alpha = 0.7;
+      let glowSize = radius * 2;
+
+      if (mode === 'sequential') {
+        const dist = Math.abs(i - seqHighlight);
+        const nearHighlight = dist < 5 || dist > N - 5;
+        alpha = nearHighlight ? 1.0 : 0.15;
+        glowSize = nearHighlight ? radius * 4 : radius;
+      }
+
+      // Glow
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, glowSize);
+      grad.addColorStop(0, `hsla(${p.hue}, 80%, 65%, ${alpha * 0.6})`);
+      grad.addColorStop(1, `hsla(${p.hue}, 80%, 65%, 0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(px, py, glowSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Core
+      ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Draw connections in sequential mode
+    if (mode === 'sequential') {
+      const hi = seqHighlight;
+      ctx.strokeStyle = 'rgba(108, 92, 231, 0.15)';
+      ctx.lineWidth = 0.5;
+      for (let j = 0; j < N; j++) {
+        if (j === hi) continue;
+        ctx.beginPath();
+        ctx.moveTo(particles[hi].x * scaleX, particles[hi].y * scaleY);
+        ctx.lineTo(particles[j].x * scaleX, particles[j].y * scaleY);
+        ctx.stroke();
+      }
+    }
+
+    frameCount++;
+    const now = performance.now();
+    if (now - lastFpsTime > 500) {
+      fps = Math.round(frameCount / ((now - lastFpsTime) / 1000));
+      frameCount = 0;
+      lastFpsTime = now;
+    }
+    statsEl.textContent = `Particles: ${N} | Mode: ${mode === 'parallel' ? 'Parallel' : 'Sequential'} | FPS: ${fps}`;
+
+    requestAnimationFrame(render);
+  }
+
+  document.getElementById('nbody-mode-seq').addEventListener('click', () => {
+    mode = 'sequential';
+    document.getElementById('nbody-mode-seq').classList.add('active');
+    document.getElementById('nbody-mode-par').classList.remove('active');
+    // Clear canvas for trail reset
+    const dpr = window.devicePixelRatio || 1;
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  });
+
+  document.getElementById('nbody-mode-par').addEventListener('click', () => {
+    mode = 'parallel';
+    document.getElementById('nbody-mode-par').classList.add('active');
+    document.getElementById('nbody-mode-seq').classList.remove('active');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  });
+
+  document.getElementById('nbody-reset').addEventListener('click', () => {
+    initParticles();
+    const dpr = window.devicePixelRatio || 1;
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  });
+
+  initParticles();
+  render();
+})();
+</script>
+</body>
+</html>
