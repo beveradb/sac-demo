@@ -753,7 +753,7 @@ footer a {
   50% { opacity: 0.4; }
 }
 
-/* "Run in SAC" button */
+/* "Run Full Program in SAC" button */
 .sac-run-btn {
   display: inline-flex;
   align-items: center;
@@ -881,6 +881,162 @@ footer a {
 }
 
 .sac-bench-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Output explainer text */
+.sac-output .output-explainer {
+  font-family: sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* JS Demo badge on visualizations */
+.js-demo-badge {
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: rgba(42, 42, 58, 0.5);
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+/* Expanded companion toast */
+.sac-companion-indicator .companion-toast {
+  font-family: sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+  max-width: 320px;
+  margin-left: 0.3rem;
+  overflow: hidden;
+  transition: max-height 0.5s ease, opacity 0.5s ease, margin 0.5s ease;
+}
+
+.sac-companion-indicator .companion-toast.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+}
+
+/* SAC Mode Toggle */
+.sac-mode-toggle {
+  display: inline-flex;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.15);
+  margin-left: 0.6rem;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+}
+
+.sac-mode-toggle .toggle-option {
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-dim);
+  background: transparent;
+  user-select: none;
+}
+
+.sac-mode-toggle .toggle-option:hover {
+  color: var(--text);
+}
+
+.sac-mode-toggle .toggle-option.active-js {
+  background: rgba(108, 92, 231, 0.3);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sac-mode-toggle .toggle-option.active-sac {
+  background: rgba(0, 184, 148, 0.3);
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* SAC computing overlay */
+.sac-computing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  z-index: 10;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--success);
+  animation: fadeInUp 0.2s ease forwards;
+}
+
+.sac-computing-overlay::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--success);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* SAC Computed badge (green variant of js-demo-badge) */
+.sac-computed-badge {
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 0.6rem;
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid rgba(0, 184, 148, 0.4);
+  border-radius: 4px;
+  background: rgba(0, 184, 148, 0.12);
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+/* N-body SAC compute button */
+.nbody-sac-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(0, 184, 148, 0.2), rgba(0, 206, 201, 0.3));
+  border: 1px solid rgba(0, 184, 148, 0.4);
+  border-radius: 8px;
+  color: var(--success);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nbody-sac-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 184, 148, 0.35), rgba(0, 206, 201, 0.45));
+  box-shadow: 0 0 15px rgba(0, 184, 148, 0.2);
+}
+
+.nbody-sac-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -1219,6 +1375,14 @@ footer a {
 
 <script>
 // ============================================================
+// GLOBAL SAC MODE STATE
+// ============================================================
+window.__sacModeCallbacks = [];
+window.__sacRegisterModeCallback = function(cb) { window.__sacModeCallbacks.push(cb); };
+window.__sacGetComputeMode = function() { return 'js'; }; // overridden by companion IIFE
+window.__sacCompanionUrl = 'http://localhost:7227';
+
+// ============================================================
 // MANDELBROT HERO
 // ============================================================
 (function() {
@@ -1465,23 +1629,73 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   matrix = makeMatrix(2);
   renderGrid(matrix);
 
+  function showOverlay(container, text) {
+    let ov = container.querySelector('.sac-computing-overlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.className = 'sac-computing-overlay';
+      container.style.position = 'relative';
+      container.appendChild(ov);
+    }
+    ov.textContent = text || 'Computing in SAC...';
+    return ov;
+  }
+  function hideOverlay(container) {
+    const ov = container.querySelector('.sac-computing-overlay');
+    if (ov) ov.remove();
+  }
+
+  function applyOpJS(op) {
+    if (op === 'reset') {
+      matrix = makeMatrix(currentDim);
+    } else if (ops[op]) {
+      if (currentDim === 3) {
+        const flat2d = { shape: [matrix.shape[0] * matrix.shape[1], matrix.shape[2]], data: [...matrix.data] };
+        const result = ops[op](flat2d);
+        matrix = { shape: [matrix.shape[0], ...result.shape.length === 1 ? [result.shape[0]] : result.shape], data: result.data };
+        matrix.shape = result.shape;
+      } else {
+        matrix = ops[op](matrix);
+      }
+    }
+  }
+
   document.querySelectorAll('.array-controls .btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const op = btn.dataset.op;
+      codeEl.innerHTML = `<span class="label">SAC</span>\n` + (sacCode[op] || sacCode.reset);
+
       if (op === 'reset') {
         matrix = makeMatrix(currentDim);
-      } else if (ops[op]) {
-        if (currentDim === 3) {
-          const flat2d = { shape: [matrix.shape[0] * matrix.shape[1], matrix.shape[2]], data: [...matrix.data] };
-          const result = ops[op](flat2d);
-          matrix = { shape: [matrix.shape[0], ...result.shape.length === 1 ? [result.shape[0]] : result.shape], data: result.data };
-          matrix.shape = result.shape;
-        } else {
-          matrix = ops[op](matrix);
+        renderGrid(matrix);
+        return;
+      }
+
+      if (window.__sacGetComputeMode() === 'sac' && ops[op]) {
+        const container = grid.parentElement;
+        showOverlay(container, 'Computing in SAC...');
+        try {
+          const resp = await fetch(window.__sacCompanionUrl + '/compute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ operation: 'array_op', params: { op, shape: matrix.shape, data: matrix.data } }),
+          });
+          const data = await resp.json();
+          if (data.success && data.result && data.result.shape && data.result.data) {
+            matrix = data.result;
+          } else {
+            console.error('SAC array_op fallback:', data.error);
+            applyOpJS(op);
+          }
+        } catch (e) {
+          console.error('SAC array_op fetch error, falling back to JS:', e);
+          applyOpJS(op);
         }
+        hideOverlay(container);
+      } else {
+        applyOpJS(op);
       }
       renderGrid(matrix);
-      codeEl.innerHTML = `<span class="label">SAC</span>\n` + (sacCode[op] || sacCode.reset);
     });
   });
 
@@ -1494,6 +1708,12 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       renderGrid(matrix);
       codeEl.innerHTML = `<span class="label">SAC</span>\n<span class="cmt">// ${currentDim}D array - same operations apply!</span>\n<span class="typ">int</span>[${'.'.repeat(currentDim).split('').join(',')}] arr = ...;`;
     });
+  });
+
+  // Register mode callback: reset on mode switch
+  window.__sacRegisterModeCallback(function(mode) {
+    matrix = makeMatrix(currentDim);
+    renderGrid(matrix);
   });
 })();
 
@@ -1554,9 +1774,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     container.appendChild(el);
   }
 
-  function showPreset(name) {
-    const p = presets[name];
-    codeEl.innerHTML = `<span class="label">SAC</span>\n` + p.code;
+  function renderViz(name, resultMatrix) {
     vizEl.innerHTML = '';
     const srcLabel = document.createElement('div');
     srcLabel.style.textAlign = 'center';
@@ -1578,8 +1796,32 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     dstTitle.textContent = 'Result';
     dstTitle.style.cssText = 'font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;';
     dstLabel.appendChild(dstTitle);
-    renderMatrix(p.fn(src), dstLabel, true);
+    renderMatrix(resultMatrix, dstLabel, true);
     vizEl.appendChild(dstLabel);
+  }
+
+  async function showPreset(name) {
+    const p = presets[name];
+    codeEl.innerHTML = `<span class="label">SAC</span>\n` + p.code;
+
+    if (window.__sacGetComputeMode() === 'sac') {
+      try {
+        const resp = await fetch(window.__sacCompanionUrl + '/compute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operation: 'tensor', params: { preset: name, matrix: src } }),
+        });
+        const data = await resp.json();
+        if (data.success && data.result && data.result.matrix) {
+          renderViz(name, data.result.matrix);
+          return;
+        }
+        console.error('SAC tensor fallback:', data.error);
+      } catch (e) {
+        console.error('SAC tensor fetch error, falling back to JS:', e);
+      }
+    }
+    renderViz(name, p.fn(src));
   }
 
   document.querySelectorAll('.tensor-presets .btn').forEach(btn => {
@@ -1588,6 +1830,12 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       btn.classList.add('active');
       showPreset(btn.dataset.preset);
     });
+  });
+
+  window.__sacRegisterModeCallback(function(mode) {
+    showPreset('transpose');
+    document.querySelectorAll('.tensor-presets .btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.tensor-presets .btn[data-preset="transpose"]').classList.add('active');
   });
 
   showPreset('transpose');
@@ -1663,7 +1911,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     emboss: `<span class="cmt">// Emboss stencil</span>\n<span class="typ">double</span>[.,.] kernel =\n  <span class="fn">reshape</span>([<span class="num">3</span>,<span class="num">3</span>],\n    [<span class="num">-2</span>,<span class="num">-1</span>,<span class="num">0</span>, <span class="num">-1</span>,<span class="num">1</span>,<span class="num">1</span>, <span class="num">0</span>,<span class="num">1</span>,<span class="num">2</span>]);\n\nresult = { [i,j] ->\n  <span class="fn">sum</span>({ [di,dj] ->\n    image[i+di<span class="num">-1</span>, j+dj<span class="num">-1</span>] * kernel[di,dj]\n  | [di,dj] < [<span class="num">3</span>,<span class="num">3</span>] })\n};`
   };
 
-  function applyKernel(kernelName) {
+  function applyKernelJS(kernelName) {
     const k = kernels[kernelName];
     const src = srcImg.data;
     const dst = dstCtx.createImageData(W, H);
@@ -1688,8 +1936,21 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       }
     }
     dstCtx.putImageData(dst, 0, 0);
+  }
 
-    // Show kernel
+  function renderRgbToCanvas(ctx, rgb, w, h) {
+    const img = ctx.createImageData(w, h);
+    for (let i = 0; i < w * h; i++) {
+      img.data[i * 4] = rgb[i * 3];
+      img.data[i * 4 + 1] = rgb[i * 3 + 1];
+      img.data[i * 4 + 2] = rgb[i * 3 + 2];
+      img.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function showKernelAndCode(kernelName) {
+    const k = kernels[kernelName];
     kernelDisplay.innerHTML = '';
     k.k.flat().forEach(v => {
       const cell = document.createElement('div');
@@ -1700,9 +1961,42 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       else cell.style.color = 'var(--text-dim)';
       kernelDisplay.appendChild(cell);
     });
-
     codeEl.innerHTML = `<span class="label">SAC</span>\n` + sacCodeMap[kernelName];
     filterLabel.textContent = k.name;
+  }
+
+  async function applyKernel(kernelName) {
+    showKernelAndCode(kernelName);
+
+    if (window.__sacGetComputeMode() === 'sac' && kernelName !== 'identity') {
+      const container = dstCanvas.parentElement;
+      container.style.position = 'relative';
+      const ov = document.createElement('div');
+      ov.className = 'sac-computing-overlay';
+      ov.textContent = 'Computing in SAC...';
+      container.appendChild(ov);
+
+      try {
+        const resp = await fetch(window.__sacCompanionUrl + '/compute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operation: 'stencil', params: { kernel: kernelName, width: W, height: H } }),
+        });
+        const data = await resp.json();
+        if (data.success && data.result) {
+          const r = data.result;
+          if (r.source_rgb) renderRgbToCanvas(srcCtx, r.source_rgb, r.width, r.height);
+          if (r.filtered_rgb) renderRgbToCanvas(dstCtx, r.filtered_rgb, r.width, r.height);
+          ov.remove();
+          return;
+        }
+        console.error('SAC stencil fallback:', data.error);
+      } catch (e) {
+        console.error('SAC stencil fetch error, falling back to JS:', e);
+      }
+      ov.remove();
+    }
+    applyKernelJS(kernelName);
   }
 
   document.querySelectorAll('[data-kernel]').forEach(btn => {
@@ -1711,6 +2005,12 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       btn.classList.add('active');
       applyKernel(btn.dataset.kernel);
     });
+  });
+
+  window.__sacRegisterModeCallback(function(mode) {
+    applyKernel('identity');
+    document.querySelectorAll('[data-kernel]').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-kernel="identity"]').classList.add('active');
   });
 
   applyKernel('identity');
@@ -1935,6 +2235,12 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   let lastFpsTime = performance.now();
   let fps = 0;
 
+  // SAC playback state
+  let sacFrames = null;
+  let sacFrameIdx = 0;
+  let sacPlayback = false;
+  let sacBtnEl = null;
+
   function initParticles() {
     particles = [];
     for (let i = 0; i < N; i++) {
@@ -1951,9 +2257,28 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         hue: (angle / (Math.PI * 2) * 360 + Math.random() * 30) % 360
       });
     }
+    sacPlayback = false;
+    sacFrames = null;
+    sacFrameIdx = 0;
   }
 
   function step() {
+    // If playing back SAC frames, use those positions
+    if (sacPlayback && sacFrames && sacFrameIdx < sacFrames.length) {
+      const frame = sacFrames[sacFrameIdx];
+      for (let i = 0; i < Math.min(N, frame.positions.length); i++) {
+        particles[i].x = frame.positions[i][0];
+        particles[i].y = frame.positions[i][1];
+      }
+      sacFrameIdx++;
+      if (sacFrameIdx >= sacFrames.length) {
+        sacPlayback = false;
+        sacFrames = null;
+        if (sacBtnEl) sacBtnEl.textContent = 'Compute in SAC (done - resumed JS)';
+      }
+      return;
+    }
+
     const ax = new Float64Array(N);
     const ay = new Float64Array(N);
 
@@ -2031,17 +2356,20 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         glowSize = nearHighlight ? radius * 4 : radius;
       }
 
+      // Green tint during SAC playback
+      const hue = sacPlayback ? 160 : p.hue;
+
       // Glow
       const grad = ctx.createRadialGradient(px, py, 0, px, py, glowSize);
-      grad.addColorStop(0, `hsla(${p.hue}, 80%, 65%, ${alpha * 0.6})`);
-      grad.addColorStop(1, `hsla(${p.hue}, 80%, 65%, 0)`);
+      grad.addColorStop(0, `hsla(${hue}, 80%, 65%, ${alpha * 0.6})`);
+      grad.addColorStop(1, `hsla(${hue}, 80%, 65%, 0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(px, py, glowSize, 0, Math.PI * 2);
       ctx.fill();
 
       // Core
-      ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${alpha})`;
+      ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${alpha})`;
       ctx.beginPath();
       ctx.arc(px, py, radius, 0, Math.PI * 2);
       ctx.fill();
@@ -2068,9 +2396,68 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
       frameCount = 0;
       lastFpsTime = now;
     }
-    statsEl.textContent = `Particles: ${N} | Mode: ${mode === 'parallel' ? 'Parallel' : 'Sequential'} | FPS: ${fps}`;
+    const modeLabel = sacPlayback ? 'SAC Playback' : (mode === 'parallel' ? 'Parallel' : 'Sequential');
+    statsEl.textContent = `Particles: ${N} | Mode: ${modeLabel}${sacPlayback ? ` (${sacFrameIdx}/${sacFrames ? sacFrames.length : 0})` : ''} | FPS: ${fps}`;
 
     requestAnimationFrame(render);
+  }
+
+  // SAC batch compute
+  async function computeInSac() {
+    if (!sacBtnEl || sacBtnEl.disabled) return;
+    sacBtnEl.disabled = true;
+    const nSteps = 120;
+    sacBtnEl.textContent = `Computing ${nSteps} steps in SAC...`;
+
+    const positions = particles.map(p => [p.x, p.y]);
+    const velocities = particles.map(p => [p.vx, p.vy]);
+    const masses = particles.map(p => p.mass);
+
+    try {
+      const resp = await fetch(window.__sacCompanionUrl + '/compute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          operation: 'nbody',
+          params: { n_particles: N, n_steps: nSteps, positions, velocities, masses, dt: DT, g: G, softening: SOFTENING },
+        }),
+      });
+      const data = await resp.json();
+      if (data.success && data.result && data.result.frames) {
+        sacFrames = data.result.frames;
+        sacFrameIdx = 0;
+        sacPlayback = true;
+        sacBtnEl.textContent = `Playing ${sacFrames.length} SAC frames...`;
+        // Clear canvas for fresh playback
+        const dpr = window.devicePixelRatio || 1;
+        ctx.fillStyle = '#050508';
+        ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      } else {
+        console.error('SAC nbody error:', data.error);
+        sacBtnEl.textContent = 'SAC compute failed - try again';
+      }
+    } catch (e) {
+      console.error('SAC nbody fetch error:', e);
+      sacBtnEl.textContent = 'Connection error - try again';
+    }
+
+    sacBtnEl.disabled = false;
+  }
+
+  function addSacButton() {
+    const controls = document.querySelector('.nbody-controls');
+    if (!controls || controls.querySelector('.nbody-sac-btn')) return;
+    sacBtnEl = document.createElement('button');
+    sacBtnEl.className = 'nbody-sac-btn';
+    sacBtnEl.textContent = 'Compute 120 Steps in SAC';
+    sacBtnEl.addEventListener('click', computeInSac);
+    controls.appendChild(sacBtnEl);
+  }
+
+  function removeSacButton() {
+    if (sacBtnEl) { sacBtnEl.remove(); sacBtnEl = null; }
+    sacPlayback = false;
+    sacFrames = null;
   }
 
   document.getElementById('nbody-mode-seq').addEventListener('click', () => {
@@ -2099,6 +2486,15 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
   });
 
+  // Register mode callback
+  window.__sacRegisterModeCallback(function(newMode) {
+    if (newMode === 'sac') {
+      addSacButton();
+    } else {
+      removeSacButton();
+    }
+  });
+
   initParticles();
   render();
 })();
@@ -2119,14 +2515,75 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
   let sacVersion = '';
   let addedButtons = [];
   let benchBtn = null;
+  let computeMode = 'js'; // 'js' or 'sac'
+  let toggleEl = null;
+
+  // Override global getter
+  window.__sacGetComputeMode = function() { return computeMode; };
 
   // ---- Indicator ----
 
   function createIndicator() {
     indicatorEl = document.createElement('div');
     indicatorEl.className = 'sac-companion-indicator';
-    indicatorEl.innerHTML = '<span class="sac-companion-dot"></span><span class="sac-companion-text"></span>';
+    indicatorEl.innerHTML = `
+      <span class="sac-companion-dot"></span>
+      <span class="sac-companion-text"></span>
+      <div class="sac-mode-toggle" style="display:none">
+        <span class="toggle-option active-js" data-mode="js">JS</span>
+        <span class="toggle-option" data-mode="sac">SAC</span>
+      </div>`;
     document.body.appendChild(indicatorEl);
+
+    toggleEl = indicatorEl.querySelector('.sac-mode-toggle');
+    toggleEl.querySelectorAll('.toggle-option').forEach(opt => {
+      opt.addEventListener('click', () => setComputeMode(opt.dataset.mode));
+    });
+
+    // Restore from sessionStorage
+    const saved = sessionStorage.getItem('sacComputeMode');
+    if (saved === 'sac') {
+      computeMode = 'sac';
+    }
+  }
+
+  function setComputeMode(newMode) {
+    if (newMode === computeMode) return;
+    computeMode = newMode;
+    sessionStorage.setItem('sacComputeMode', newMode);
+
+    // Update toggle UI
+    toggleEl.querySelectorAll('.toggle-option').forEach(opt => {
+      opt.classList.remove('active-js', 'active-sac');
+      if (opt.dataset.mode === newMode) {
+        opt.classList.add(newMode === 'sac' ? 'active-sac' : 'active-js');
+      }
+    });
+
+    // Update badges
+    updateBadgesForMode(newMode);
+
+    // Notify all visualizations
+    window.__sacModeCallbacks.forEach(cb => {
+      try { cb(newMode); } catch(e) { console.error('Mode callback error:', e); }
+    });
+  }
+
+  function showToggle() {
+    if (toggleEl) {
+      toggleEl.style.display = '';
+      // Apply saved mode on connect
+      if (computeMode === 'sac') {
+        setComputeMode('sac');
+      }
+    }
+  }
+
+  function hideToggle() {
+    if (toggleEl) toggleEl.style.display = 'none';
+    if (computeMode === 'sac') {
+      setComputeMode('js');
+    }
   }
 
   function updateIndicator(isConnected, text) {
@@ -2175,19 +2632,88 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
   // ---- Connect / Disconnect ----
 
+  let demoBadges = [];
+
+  const badgeTargets = [
+    { selector: '.array-demo', parent: false },
+    { selector: '#tensor-viz', parent: true },
+    { selector: '.stencil-canvases', parent: false },
+    { selector: '#nbody-canvas', parent: true },
+  ];
+
+  function addBadges() {
+    badgeTargets.forEach(({ selector, parent }) => {
+      let el = document.querySelector(selector);
+      if (parent && el) el = el.parentElement;
+      if (!el || el.querySelector('.js-demo-badge') || el.querySelector('.sac-computed-badge')) return;
+      const badge = document.createElement('div');
+      badge.className = computeMode === 'sac' ? 'sac-computed-badge' : 'js-demo-badge';
+      badge.textContent = computeMode === 'sac' ? 'SAC Computed' : 'Interactive JS Demo';
+      badge.dataset.sacBadge = 'true';
+      el.insertBefore(badge, el.firstChild);
+      demoBadges.push(badge);
+    });
+  }
+
+  function removeBadges() {
+    demoBadges.forEach(b => b.remove());
+    demoBadges = [];
+  }
+
+  function updateBadgesForMode(mode) {
+    demoBadges.forEach(badge => {
+      if (mode === 'sac') {
+        badge.className = 'sac-computed-badge';
+        badge.textContent = 'SAC Computed';
+      } else {
+        badge.className = 'js-demo-badge';
+        badge.textContent = 'Interactive JS Demo';
+      }
+    });
+  }
+
+  function showConnectToast() {
+    if (!indicatorEl) return;
+    // Remove any previous toast
+    const prev = indicatorEl.querySelector('.companion-toast');
+    if (prev) prev.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'companion-toast';
+    toast.textContent = "SAC compiler detected \u2014 use the JS/SAC toggle to drive visualizations with real compiled SAC code.";
+    indicatorEl.appendChild(toast);
+
+    // Collapse after 8 seconds
+    setTimeout(() => {
+      toast.classList.add('collapsed');
+      setTimeout(() => toast.remove(), 600);
+    }, 8000);
+  }
+
   function onConnect() {
     updateIndicator(true, 'SAC Runtime Connected');
+    if (indicatorEl) {
+      indicatorEl.title = "A real sac2c compiler is available via Docker. Toggle JS/SAC to drive visualizations with real compiled SAC code.";
+    }
+    showToggle();
     addRunButtons();
     addBenchmarkButton();
+    addBadges();
+    showConnectToast();
   }
 
   function onDisconnect() {
     updateIndicator(false, 'SAC Runtime Disconnected');
+    if (indicatorEl) {
+      indicatorEl.title = '';
+    }
+    hideToggle();
     removeRunButtons();
     removeBenchmarkButton();
+    removeBadges();
   }
 
-  // ---- "Run in SAC" buttons ----
+  // ---- "Run Full Program in SAC" buttons ----
 
   // Map section code blocks to their demo program names
   const codeBlockMap = [
@@ -2204,7 +2730,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
       const btn = document.createElement('button');
       btn.className = 'sac-run-btn';
-      btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run in SAC';
+      btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run Full Program in SAC';
       btn.dataset.sacDemo = name;
       btn.addEventListener('click', () => handleRun(btn, codeEl, name));
       codeEl.parentNode.insertBefore(btn, codeEl.nextSibling);
@@ -2225,7 +2751,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         // N-body code block
         const btn = document.createElement('button');
         btn.className = 'sac-run-btn';
-        btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run in SAC';
+        btn.innerHTML = '<span class="sac-run-icon">&#9654;</span> Run Full Program in SAC';
         btn.dataset.sacDemo = 'nbody_demo';
         btn.addEventListener('click', () => handleRun(btn, codeEl, 'nbody_demo'));
         codeEl.parentNode.insertBefore(btn, codeEl.nextSibling);
@@ -2262,7 +2788,7 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
     // Show loading output
     const outputEl = document.createElement('div');
     outputEl.className = 'sac-output loading';
-    outputEl.innerHTML = '<div class="output-header">sac2c output</div>Compiling and running...';
+    outputEl.innerHTML = '<div class="output-header">real sac2c output</div><div class="output-explainer">Compiling and running the full SAC program on a real sac2c compiler (running in Docker). The visualization above is a JavaScript simulation of the same concept.</div>Compiling and running...';
     btn.parentNode.insertBefore(outputEl, btn.nextSibling);
 
     try {
@@ -2285,20 +2811,22 @@ document.querySelectorAll('.card').forEach(c => observer.observe(c));
         if (data.compile_time_ms > 0) timing.push(`compile: ${Math.round(data.compile_time_ms)}ms`);
         if (data.run_time_ms > 0) timing.push(`run: ${Math.round(data.run_time_ms)}ms`);
         outputEl.innerHTML =
-          `<div class="output-header"><span>sac2c output</span><span class="output-timing">${timing.join(' | ')}</span></div>` +
+          `<div class="output-header"><span>real sac2c output</span><span class="output-timing">${timing.join(' | ')}</span></div>` +
+          `<div class="output-explainer">This is the actual output from compiling and running the full SAC program on a real sac2c compiler (running in Docker). The visualization above is a JavaScript simulation of the same concept.</div>` +
           escapeHtml(data.stdout || '(no output)') +
           (data.stderr ? '\n' + escapeHtml(data.stderr) : '');
       } else {
         outputEl.classList.add('error');
         outputEl.innerHTML =
           `<div class="output-header">sac2c error</div>` +
+          `<div class="output-explainer">Error from compiling/running the full SAC program on a real sac2c compiler (running in Docker).</div>` +
           escapeHtml(data.error || 'Unknown error') +
           (data.stderr ? '\n\n' + escapeHtml(data.stderr) : '');
       }
     } catch (e) {
       outputEl.classList.remove('loading');
       outputEl.classList.add('error');
-      outputEl.innerHTML = `<div class="output-header">connection error</div>Could not reach SAC companion server.\n${escapeHtml(e.message)}`;
+      outputEl.innerHTML = `<div class="output-header">connection error</div><div class="output-explainer">Could not reach the Docker-based sac2c compiler.</div>Could not reach SAC companion server.\n${escapeHtml(e.message)}`;
     }
 
     btn.innerHTML = origHTML;
